@@ -1626,6 +1626,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "nj-sys"
+version = "0.2.1"
+
+[[package]]
 name = "nom"
 version = "4.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
