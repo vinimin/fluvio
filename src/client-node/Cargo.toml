@@ -8,6 +8,9 @@ repository = "https://github.com/infinyon/fluvio"
 homepage = "fluvio.io"
 description = "Node Client for Fluvio"
 
+[lib]
+crate-type = ["cdylib"]
+
 
 [dependencies]
 log = "0.4.8"
@@ -16,4 +19,5 @@ flv-future-aio = { path = "../future-aio"}
 kf-protocol = { path = "../kf-protocol"}
 types = { path = "../types"}
 flv-client = { path = "../client-rs" }
+nj-sys = { path = "../nj-sys"}
 
