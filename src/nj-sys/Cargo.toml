@@ -3,3 +3,6 @@ name = "nj-sys"
 version = "0.2.1"
 authors = ["fluvio.io"]
 edition = "2018"
+
+[build-dependencies]
+bindgen = "0.52.0"

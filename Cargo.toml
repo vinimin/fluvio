@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "src/cli",
-    "src/client",
+    "src/client-rs",
+    "src/client-node",
     "src/future-aio",
     "src/future-helper",
     "src/api/internal-api",
