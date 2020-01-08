@@ -46,10 +46,6 @@ pub extern "C" fn init_hello (env: napi_env, exports: napi_value ) -> napi_value
     };
     
     let status = unsafe { napi_define_properties(env, exports, 1, &descriptor) };
-
-    //napi_property_descriptor desc = DECLARE_NAPI_METHOD("hello", Method);
-    //status = napi_define_properties(env, exports, 1, &desc);
-    println!("property status: {}",status);
     assert_eq!(status, napi_status_napi_ok);
     return exports;
 }
