@@ -721,6 +721,7 @@ dependencies = [
  "flv-future-aio",
  "flv-future-core",
  "kf-protocol",
+ "libc",
  "log",
  "nj-sys",
  "types",

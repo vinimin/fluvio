@@ -5,3 +5,5 @@
 mod binding;
 
 pub use binding::*;
+
+unsafe impl Sync for binding::napi_module{}
