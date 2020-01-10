@@ -10,7 +10,7 @@ build:	setup
 	cargo build --lib
 	cp $(DYLIB) dylib/index.node
 
-test:
+test:	build
 	node test.js
 
 

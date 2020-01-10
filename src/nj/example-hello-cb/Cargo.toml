@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-ctor = "0.1.12"
 libc = "0.2.66"
+nj-core = { path = "../nj-core"}
 nj-sys = { path = "../nj-sys" }

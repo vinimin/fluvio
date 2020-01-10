@@ -1,5 +1,5 @@
 [package]
-name = "nj-core"
+name = "nj"
 version = "0.2.1"
 authors = ["fluvio.io"]
 edition = "2018"
@@ -10,6 +10,7 @@ example = []
 
 [dependencies]
 nj-sys = { path = "nj-sys" }
+nj-core = { path = "nj-core" }
 nj-sys-example-hello = { path = "example-hello", optional = true }
 nj-sys-example-hello-cb = { path = "example-hello-cb", optional = true }
 nj-sys-example-hello-async-cb = { path = "example-hello-async-cb", optional = true }

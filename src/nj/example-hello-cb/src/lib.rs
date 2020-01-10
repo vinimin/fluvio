@@ -2,7 +2,6 @@ use std::ptr;
 use std::os::raw::c_char;
 
 
-use ctor::ctor;
 use libc::size_t;
 
 use nj_sys::napi_status_napi_ok;
@@ -10,14 +9,14 @@ use nj_sys::napi_value;
 use nj_sys::napi_env;
 use nj_sys::napi_callback_info;
 use nj_sys::napi_create_string_utf8;
-use nj_sys::napi_module;
-use nj_sys::NAPI_VERSION;
 use nj_sys::NAPI_AUTO_LENGTH;
 use nj_sys::napi_get_cb_info;
 use nj_sys::napi_get_global;
 use nj_sys::napi_call_function;
 use nj_sys::napi_create_function;
-
+use nj_core::register_module;
+use nj_core::define_property;
+use nj_core::export_function;
 
 #[no_mangle]
 pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi_value {
@@ -55,41 +54,6 @@ pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi
 }
 
 
+export_function!(hello_callback);
 
-
-#[no_mangle]
-pub extern "C" fn init_hello (env: napi_env, _exports: napi_value ) -> napi_value{
-        
-    let mut new_exports = ptr::null_mut();
-    let status = unsafe { napi_create_function(env, b"x00" as *const u8 as *const c_char, NAPI_AUTO_LENGTH as usize,
-         Some(hello_callback), ptr::null_mut(), &mut new_exports) };
-  
-    assert_eq!(status,napi_status_napi_ok);
-    return new_exports;
-}
-
-
-
-
-#[ctor]
-fn init_module() {
-
-    extern "C" {
-        pub fn napi_module_register(mod_: *mut napi_module);
-    }
-
-    static mut _module: napi_module  = napi_module {
-        nm_version: NAPI_VERSION as i32,
-        nm_flags: 0,
-        nm_filename: b"test.rs\x00" as *const u8 as *const c_char,
-        nm_register_func: Some(init_hello),
-        nm_modname:  b"hello\x00" as *const u8 as *const c_char,
-        nm_priv: ptr::null_mut(),
-        reserved: [ptr::null_mut(),ptr::null_mut(),ptr::null_mut(),ptr::null_mut()]
-    };
-
-    unsafe {
-        napi_module_register(&mut _module);
-    }
-   
-}
+register_module!("hello",init_hello);

@@ -21,5 +21,5 @@ flv-future-aio = { path = "../future-aio"}
 kf-protocol = { path = "../kf-protocol"}
 types = { path = "../types"}
 flv-client = { path = "../client-rs" }
-nj-core = { path = "../nj-core"}
+nj = { path = "../nj"}
 

@@ -1,0 +1,10 @@
+[package]
+name = "nj-core"
+version = "0.2.1"
+authors = ["fluvio.io"]
+edition = "2018"
+
+[dependencies]
+nj-sys = { path = "../nj-sys" }
+ctor = "0.1.12"
+byte-strings = "0.1.3"

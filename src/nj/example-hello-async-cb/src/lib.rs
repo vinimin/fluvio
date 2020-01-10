@@ -4,14 +4,13 @@ use std::time::Duration;
 
 use ctor::ctor;
 use libc::size_t;
+use byte_strings::c_str;
 
 use nj_sys::napi_status_napi_ok;
 use nj_sys::napi_value;
 use nj_sys::napi_env;
 use nj_sys::napi_callback_info;
 use nj_sys::napi_create_string_utf8;
-use nj_sys::napi_module;
-use nj_sys::NAPI_VERSION;
 use nj_sys::NAPI_AUTO_LENGTH;
 use nj_sys::napi_get_cb_info;
 use nj_sys::napi_get_global;
@@ -20,14 +19,13 @@ use nj_sys::napi_create_function;
 use nj_sys::napi_create_threadsafe_function;
 use nj_sys::napi_call_threadsafe_function;
 use nj_sys::napi_threadsafe_function_call_mode_napi_tsfn_blocking;
-use nj_sys::napi_threadsafe_function;
 use nj_sys::napi_release_threadsafe_function;
 use nj_sys::napi_threadsafe_function_release_mode_napi_tsfn_release;
 
 use flv_future_core::spawn;
 use flv_future_core::sleep;
-
-
+use nj_core::ThreadSafeFunction;
+use nj_core::register_module;
 
 // convert the rust data into JS
 pub extern "C" fn hello_callback_js(
@@ -71,10 +69,6 @@ pub extern "C" fn hello_callback_js(
 
 }
 
-struct TsFn(napi_threadsafe_function);
-
-unsafe impl Sync for TsFn{}
-unsafe impl Send for TsFn{}
 
 #[no_mangle]
 pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -> napi_value {
@@ -132,15 +126,15 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
         napi_status_napi_ok);
 
 
-    let xtsfn = TsFn(tsfn);
+    let xtsfn: ThreadSafeFunction = tsfn.into();
 
     spawn(async move {
             
             println!("sleeping");
-            sleep(Duration::from_secs(3)).await;
+            sleep(Duration::from_secs(1)).await;
             println!("woke from time");
 
-            let inner_fn = xtsfn.0;
+            let inner_fn = xtsfn.inner();
             
             assert_eq!(
                 unsafe {
@@ -181,27 +175,4 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
   }
   
 
-
-
-#[ctor]
-fn init_module() {
-
-    extern "C" {
-        pub fn napi_module_register(mod_: *mut napi_module);
-    }
-
-    static mut _module: napi_module  = napi_module {
-        nm_version: NAPI_VERSION as i32,
-        nm_flags: 0,
-        nm_filename: b"test.rs\x00" as *const u8 as *const c_char,
-        nm_register_func: Some(init_async),
-        nm_modname:  b"hello\x00" as *const u8 as *const c_char,
-        nm_priv: ptr::null_mut(),
-        reserved: [ptr::null_mut(),ptr::null_mut(),ptr::null_mut(),ptr::null_mut()]
-    };
-
-    unsafe {
-        napi_module_register(&mut _module);
-    }
-   
-}
+register_module!("hello",init_async);
