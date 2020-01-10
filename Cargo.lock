@@ -1735,6 +1735,7 @@ version = "0.2.1"
 dependencies = [
  "nj-sys",
  "nj-sys-example-hello",
+ "nj-sys-example-hello-async-cb",
  "nj-sys-example-hello-cb",
 ]
 
@@ -1750,6 +1751,16 @@ name = "nj-sys-example-hello"
 version = "0.0.1"
 dependencies = [
  "ctor",
+ "nj-sys",
+]
+
+[[package]]
+name = "nj-sys-example-hello-async-cb"
+version = "0.0.1"
+dependencies = [
+ "ctor",
+ "flv-future-core",
+ "libc",
  "nj-sys",
 ]
 
