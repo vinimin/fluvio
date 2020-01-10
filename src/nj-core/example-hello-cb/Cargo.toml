@@ -1,0 +1,15 @@
+[package]
+name = "nj-sys-example-hello-cb"
+version = "0.0.1"
+authors = ["fluvio.io"]
+edition = "2018"
+
+
+[lib]
+crate-type = ["cdylib"]
+
+
+[dependencies]
+ctor = "0.1.12"
+libc = "0.2.66"
+nj-sys = { path = "../nj-sys" }

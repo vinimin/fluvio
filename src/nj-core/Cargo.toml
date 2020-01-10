@@ -11,3 +11,4 @@ example = []
 [dependencies]
 nj-sys = { path = "nj-sys" }
 nj-sys-example-hello = { path = "example-hello", optional = true }
+nj-sys-example-hello-cb = { path = "example-hello-cb", optional = true }
