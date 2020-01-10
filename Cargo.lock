@@ -1767,6 +1767,7 @@ version = "0.2.1"
 dependencies = [
  "byte-strings",
  "ctor",
+ "libc",
  "nj-sys",
 ]
 
@@ -1801,9 +1802,7 @@ dependencies = [
 name = "nj-sys-example-hello-cb"
 version = "0.0.1"
 dependencies = [
- "libc",
  "nj-core",
- "nj-sys",
 ]
 
 [[package]]

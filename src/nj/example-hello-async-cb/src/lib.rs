@@ -26,6 +26,7 @@ use flv_future_core::spawn;
 use flv_future_core::sleep;
 use nj_core::ThreadSafeFunction;
 use nj_core::register_module;
+use nj_core::create_string_utf8
 
 // convert the rust data into JS
 pub extern "C" fn hello_callback_js(
@@ -36,17 +37,7 @@ pub extern "C" fn hello_callback_js(
 
     if env != ptr::null_mut() {
 
-        let mut label = ptr::null_mut();
-    
-        assert_eq!(
-            unsafe { 
-                napi_create_string_utf8(
-                env,
-                b"hello\x00" as *const u8 as *const c_char,
-                NAPI_AUTO_LENGTH as usize, 
-                &mut label) 
-            },
-            napi_status_napi_ok);
+        let mut label = create_string_utf8!("hello world");
 
         let mut global = ptr::null_mut();
         let status = unsafe { napi_get_global(env, &mut global) };

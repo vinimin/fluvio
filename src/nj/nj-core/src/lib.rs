@@ -9,6 +9,10 @@ pub mod sys {
     pub use nj_sys::*;
 }
 
+pub mod val {
+    pub use crate::basic::*;
+}
+
 mod tsf {
 
     use nj_sys::napi_threadsafe_function;
@@ -43,8 +47,8 @@ mod init_module {
             fn init_module() {
 
                 use nj_core::c_str;
-                use nj_sys::NAPI_VERSION;
-                use nj_sys::napi_module;
+                use nj_core::sys::NAPI_VERSION;
+                use nj_core::sys::napi_module;
 
                 extern "C" {
                     pub fn napi_module_register(mod_: *mut napi_module);
