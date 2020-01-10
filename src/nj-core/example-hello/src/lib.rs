@@ -8,7 +8,6 @@ use nj_sys::napi_status_napi_ok;
 use nj_sys::napi_value;
 use nj_sys::napi_env;
 use nj_sys::napi_callback_info;
-use nj_sys::napi_create_int32;
 use nj_sys::napi_create_string_utf8;
 use nj_sys::napi_property_descriptor;
 use nj_sys::napi_property_attributes_napi_default;
@@ -17,7 +16,7 @@ use nj_sys::napi_module;
 use nj_sys::NAPI_VERSION;
 
 #[no_mangle]
-pub extern "C" fn hello_world (env: napi_env, cb_info: napi_callback_info) -> napi_value {
+pub extern "C" fn hello_world (env: napi_env, _cb_info: napi_callback_info) -> napi_value {
 
     let mut value = ptr::null_mut();
 
@@ -33,9 +32,7 @@ pub extern "C" fn hello_world (env: napi_env, cb_info: napi_callback_info) -> na
 
 #[no_mangle]
 pub extern "C" fn init_hello (env: napi_env, exports: napi_value ) -> napi_value{
-    
-    println!("registering hello module");
-    
+
     let descriptor = napi_property_descriptor {
         utf8name: b"hello\x00" as *const u8 as *const c_char,
         name: ptr::null_mut(),
@@ -74,7 +71,6 @@ fn init_module() {
     };
 
     unsafe {
-        println!("registering module version: {}",NAPI_VERSION);
         napi_module_register(&mut _module);
     }
    

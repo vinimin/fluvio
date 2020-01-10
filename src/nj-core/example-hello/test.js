@@ -1,3 +1,3 @@
-let addon = require('./lib');
+let addon = require('./dylib');
 
 console.log(addon.hello()); // 'hello'

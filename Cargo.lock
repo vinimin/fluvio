@@ -734,7 +734,7 @@ dependencies = [
  "kf-protocol",
  "libc",
  "log",
- "nj-sys",
+ "nj-core",
  "types",
 ]
 
@@ -1730,10 +1730,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "nj-core"
+version = "0.2.1"
+dependencies = [
+ "nj-sys",
+ "nj-sys-example-hello",
+]
+
+[[package]]
 name = "nj-sys"
 version = "0.2.1"
 dependencies = [
  "bindgen",
+]
+
+[[package]]
+name = "nj-sys-example-hello"
+version = "0.0.1"
+dependencies = [
+ "ctor",
+ "nj-sys",
 ]
 
 [[package]]

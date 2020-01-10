@@ -1,0 +1,13 @@
+[package]
+name = "nj-core"
+version = "0.2.1"
+authors = ["fluvio.io"]
+edition = "2018"
+
+[features]
+example = []
+
+
+[dependencies]
+nj-sys = { path = "nj-sys" }
+nj-sys-example-hello = { path = "example-hello", optional = true }

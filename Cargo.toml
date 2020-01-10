@@ -25,7 +25,7 @@ members = [
     "src/test-helper",
     "src/types",
     "src/utils",
-    "src/nj-sys"
+    "src/nj-core"
 ]
 
 # profile to make image sizer smaller
