@@ -13,10 +13,9 @@ use nj_sys::NAPI_AUTO_LENGTH;
 use nj_sys::napi_get_cb_info;
 use nj_sys::napi_get_global;
 use nj_sys::napi_call_function;
-use nj_sys::napi_create_function;
 use nj_core::register_module;
 use nj_core::define_property;
-use nj_core::export_function;
+
 
 #[no_mangle]
 pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi_value {
@@ -53,7 +52,13 @@ pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi
 
 }
 
+#[no_mangle]
+pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value{
 
-export_function!(hello_callback);
+    define_property!("hello",env,exports,hello_callback);
 
-register_module!("hello",init_hello);
+    return exports;
+}
+
+
+register_module!("hello",init_export);

@@ -1,5 +1,5 @@
 let addon = require('./dylib');
 
-addon(function(msg){
+addon.hello(function(msg){
   console.log(msg); // 'hello world'
 });

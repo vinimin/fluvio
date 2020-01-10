@@ -1,3 +1,4 @@
+mod basic;
 
 pub use tsf::ThreadSafeFunction;
 
@@ -68,19 +69,6 @@ mod init_module {
         }
     }
 
-    #[macro_export]
-    macro_rules! napi_call {
-        ($napi_expr:expr) =>  {
-            {
-                assert_eq!(
-                    unsafe { 
-                        $napi_expr
-                    }, 
-                    nj_core::sys::napi_status_napi_ok
-                );
-            }
-        }
-    }
     
     /// add new property descriptor
     #[macro_export]
