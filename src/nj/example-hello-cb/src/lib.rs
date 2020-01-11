@@ -12,10 +12,15 @@ use nj_core::val::JsEnv;
 pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi_value {
   
     let js_env = JsEnv::new(env);    
-    let cb = js_env.get_cb_info(info,1);
-    let label = js_env.create_string_utf8("hello world");
+    let cb = js_env.get_cb_info(info,2);
+   
+    let first_arg = cb.get_value(0);
+    let msg = format!("argument is: {}",first_arg);
+    let label = js_env.create_string_utf8(&msg);
     let global = js_env.get_global();
-    let _ = js_env.call_function(global, cb, 1,label);
+
+    let cb_fn = cb.args(1);
+    let _ = js_env.call_function(global, cb_fn, 1,label);
     
     return ptr::null_mut()
 

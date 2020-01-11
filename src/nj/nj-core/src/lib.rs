@@ -1,6 +1,8 @@
 mod basic;
+mod error;
 
 pub use tsf::ThreadSafeFunction;
+pub use error::NjError;
 
 pub use ctor::ctor;
 pub use byte_strings::c_str;
