@@ -1,7 +1,8 @@
 mod basic;
 mod error;
+mod thread_fn;
 
-pub use tsf::ThreadSafeFunction;
+pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
 
 pub use ctor::ctor;
@@ -15,30 +16,25 @@ pub mod val {
     pub use crate::basic::*;
 }
 
-mod tsf {
 
-    use nj_sys::napi_threadsafe_function;
 
-    /// Wrapper for Threas safe function that are safe to send and sync across thread
-    pub struct ThreadSafeFunction(napi_threadsafe_function);
-
-    unsafe impl Sync for ThreadSafeFunction{}
-    unsafe impl Send for ThreadSafeFunction{}
-
-    impl From<napi_threadsafe_function> for ThreadSafeFunction {
-        fn from(tsf: napi_threadsafe_function) -> Self {
-            Self(tsf)
-        }
-    }
-
-    impl ThreadSafeFunction {
-        pub fn inner(self) -> napi_threadsafe_function {
-            self.0
+#[macro_export]
+macro_rules! napi_call {
+    ($napi_expr:expr) =>  {
+        {
+            assert_eq!(
+                unsafe { 
+                    $napi_expr
+                }, 
+                nj_core::sys::napi_status_napi_ok
+            );
         }
     }
 }
 
+
 mod init_module {
+
 
     #[macro_export]
     macro_rules! register_module {

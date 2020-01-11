@@ -1,14 +1,10 @@
 use std::ptr;
 use std::time::Duration;
 
-use nj_core::sys::napi_status_napi_ok;
 use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
-use nj_core::sys::napi_call_threadsafe_function;
-use nj_core::sys::napi_threadsafe_function_call_mode_napi_tsfn_blocking;
-use nj_core::sys::napi_release_threadsafe_function;
-use nj_core::sys::napi_threadsafe_function_release_mode_napi_tsfn_release;
+
 
 use flv_future_core::spawn;
 use flv_future_core::sleep;
@@ -51,26 +47,7 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
             sleep(Duration::from_secs(1)).await;
             println!("woke from time");
 
-            let inner_fn = xtsfn.inner();
-            
-            assert_eq!(
-                unsafe {
-                    napi_call_threadsafe_function(
-                    inner_fn,
-                    ptr::null_mut(),
-                    napi_threadsafe_function_call_mode_napi_tsfn_blocking)
-                    },
-                napi_status_napi_ok);
-
-            assert_eq!(
-                unsafe {
-                    napi_release_threadsafe_function(
-                        inner_fn,
-                        napi_threadsafe_function_release_mode_napi_tsfn_release)
-                }, 
-                napi_status_napi_ok)
-            
-        
+            xtsfn.call();
     });
 
     return ptr::null_mut()

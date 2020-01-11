@@ -1,28 +1,14 @@
 use std::ptr;
 
-use nj_sys::napi_env;
-use nj_sys::napi_value;
-use nj_sys::napi_callback_info;
-use nj_sys::napi_valuetype;
-use nj_sys::napi_threadsafe_function_call_js;
+use crate::sys::napi_env;
+use crate::sys::napi_value;
+use crate::sys::napi_callback_info;
+use crate::sys::napi_valuetype;
+use crate::sys::napi_threadsafe_function_call_js;
 
-
-use crate as nj_core;
 use crate::c_str;
 
-#[macro_export]
-macro_rules! napi_call {
-    ($napi_expr:expr) =>  {
-        {
-            assert_eq!(
-                unsafe { 
-                    $napi_expr
-                }, 
-                nj_core::sys::napi_status_napi_ok
-            );
-        }
-    }
-}
+use crate as nj_core;
 
 pub struct JsEnv(napi_env);
 
@@ -165,7 +151,7 @@ impl JsCallback  {
         index: usize, 
         call_js_cb: napi_threadsafe_function_call_js) -> crate::ThreadSafeFunction {
 
-        use nj_core::sys::napi_create_threadsafe_function;
+        use crate::sys::napi_create_threadsafe_function;
 
         let work_name = self.env.create_string_utf8(name);
 
