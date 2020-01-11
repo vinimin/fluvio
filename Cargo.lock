@@ -1755,10 +1755,11 @@ name = "nj"
 version = "0.2.1"
 dependencies = [
  "nj-core",
+ "nj-example-hello",
+ "nj-example-hello-async-cb",
+ "nj-example-hello-cb",
+ "nj-example-wrapper",
  "nj-sys",
- "nj-sys-example-hello",
- "nj-sys-example-hello-async-cb",
- "nj-sys-example-hello-cb",
 ]
 
 [[package]]
@@ -1772,14 +1773,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nj-sys"
-version = "0.2.1"
-dependencies = [
- "bindgen",
-]
-
-[[package]]
-name = "nj-sys-example-hello"
+name = "nj-example-hello"
 version = "0.0.1"
 dependencies = [
  "nj-core",
@@ -1787,7 +1781,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nj-sys-example-hello-async-cb"
+name = "nj-example-hello-async-cb"
 version = "0.0.1"
 dependencies = [
  "flv-future-core",
@@ -1796,10 +1790,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "nj-sys-example-hello-cb"
+name = "nj-example-hello-cb"
 version = "0.0.1"
 dependencies = [
  "nj-core",
+]
+
+[[package]]
+name = "nj-example-wrapper"
+version = "0.0.1"
+dependencies = [
+ "nj-core",
+ "nj-sys",
+]
+
+[[package]]
+name = "nj-sys"
+version = "0.2.1"
+dependencies = [
+ "bindgen",
 ]
 
 [[package]]

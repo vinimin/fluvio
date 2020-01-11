@@ -1,5 +1,5 @@
 [package]
-name = "nj-sys-example-hello"
+name = "nj-example-hello"
 version = "0.0.1"
 authors = ["fluvio.io"]
 edition = "2018"
