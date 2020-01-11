@@ -1,32 +1,20 @@
 use std::ptr;
-use std::os::raw::c_char;
 use std::time::Duration;
 
-use ctor::ctor;
-use libc::size_t;
-use byte_strings::c_str;
-
-use nj_sys::napi_status_napi_ok;
-use nj_sys::napi_value;
-use nj_sys::napi_env;
-use nj_sys::napi_callback_info;
-use nj_sys::napi_create_string_utf8;
-use nj_sys::NAPI_AUTO_LENGTH;
-use nj_sys::napi_get_cb_info;
-use nj_sys::napi_get_global;
-use nj_sys::napi_call_function;
-use nj_sys::napi_create_function;
-use nj_sys::napi_create_threadsafe_function;
-use nj_sys::napi_call_threadsafe_function;
-use nj_sys::napi_threadsafe_function_call_mode_napi_tsfn_blocking;
-use nj_sys::napi_release_threadsafe_function;
-use nj_sys::napi_threadsafe_function_release_mode_napi_tsfn_release;
+use nj_core::sys::napi_status_napi_ok;
+use nj_core::sys::napi_value;
+use nj_core::sys::napi_env;
+use nj_core::sys::napi_callback_info;
+use nj_core::sys::napi_call_threadsafe_function;
+use nj_core::sys::napi_threadsafe_function_call_mode_napi_tsfn_blocking;
+use nj_core::sys::napi_release_threadsafe_function;
+use nj_core::sys::napi_threadsafe_function_release_mode_napi_tsfn_release;
 
 use flv_future_core::spawn;
 use flv_future_core::sleep;
-use nj_core::ThreadSafeFunction;
 use nj_core::register_module;
-use nj_core::create_string_utf8
+use nj_core::define_property;
+use nj_core::val::JsEnv;
 
 // convert the rust data into JS
 pub extern "C" fn hello_callback_js(
@@ -37,87 +25,25 @@ pub extern "C" fn hello_callback_js(
 
     if env != ptr::null_mut() {
 
-        let mut label = create_string_utf8!("hello world");
+        let js_env = JsEnv::new(env);
+        let label = js_env.create_string_utf8("hello world");
+        let global = js_env.get_global();
 
-        let mut global = ptr::null_mut();
-        let status = unsafe { napi_get_global(env, &mut global) };
-        assert_eq!(status,napi_status_napi_ok);
-
-        let mut result = ptr::null_mut();
-        assert_eq!(
-            unsafe { 
-                napi_call_function(
-                    env, 
-                    global, 
-                    js_cb, 
-                    1, 
-                    &mut label, 
-                    &mut result) 
-            }, 
-            napi_status_napi_ok);
+        let _ = js_env.call_function(global,js_cb,vec![label]);
     }
     
-
 }
 
 
 #[no_mangle]
 pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -> napi_value {
   
-    let mut argc: size_t  = 1;
-
-    let mut args: [napi_value; 1] = [ptr::null_mut(); 1];
-
-    let mut tsfn = ptr::null_mut();
     
+    let js_env = JsEnv::new(env); 
+    let js_cb = js_env.get_cb_info(info,1);    // only has 1 argument
 
-    // retrieve callback function
-    assert_eq!(
-        unsafe { 
-            napi_get_cb_info(
-                env, 
-                info, 
-                &mut argc,
-                args.as_mut_ptr(),
-                ptr::null_mut(), 
-                ptr::null_mut())
-        }, 
-        napi_status_napi_ok);
+    let xtsfn = js_cb.create_thread_safe_function("async",0,Some(hello_callback_js));
 
-    let js_cb: napi_value = args[0];
-
-    let mut work_name = ptr::null_mut();
-
-    assert_eq!(
-        unsafe {
-            napi_create_string_utf8(
-            env,
-            b"async \x00" as *const u8 as *const c_char,
-            NAPI_AUTO_LENGTH as usize,
-            &mut work_name)
-        },
-        napi_status_napi_ok);
-
-    // convert the callback
-    assert_eq!(
-        unsafe { 
-            napi_create_threadsafe_function(
-                env,
-                js_cb,
-                ptr::null_mut(),
-                work_name,
-                0,
-                1,
-                ptr::null_mut(),
-                None,
-                ptr::null_mut(),
-                Some(hello_callback_js),
-                &mut tsfn)
-                },
-        napi_status_napi_ok);
-
-
-    let xtsfn: ThreadSafeFunction = tsfn.into();
 
     spawn(async move {
             
@@ -153,17 +79,13 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
 
 
 
-  #[no_mangle]
-  pub extern "C" fn init_async (env: napi_env, _exports: napi_value ) -> napi_value{
+#[no_mangle]
+pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
-      let mut new_exports = ptr::null_mut();
-      let status = unsafe { napi_create_function(env, b"x00" as *const u8 as *const c_char, NAPI_AUTO_LENGTH as usize,
-           Some(hello_callback_async), ptr::null_mut(), &mut new_exports) };
+    define_property!("hello",env,exports,hello_callback_async);
     
-      assert_eq!(status,napi_status_napi_ok);
-      return new_exports;
-      
-  }
+    exports
+}
   
 
-register_module!("hello",init_async);
+register_module!("hello",init_export);

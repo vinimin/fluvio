@@ -20,7 +20,7 @@ pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi
     let global = js_env.get_global();
 
     let cb_fn = cb.args(1);
-    let _ = js_env.call_function(global, cb_fn, 1,label);
+    let _ = js_env.call_function(global, cb_fn,vec![label]);
     
     return ptr::null_mut()
 
@@ -31,7 +31,7 @@ pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_valu
 
     define_property!("hello",env,exports,hello_callback);
 
-    return exports;
+    exports;
 }
 
 

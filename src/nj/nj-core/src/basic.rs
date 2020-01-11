@@ -4,6 +4,8 @@ use nj_sys::napi_env;
 use nj_sys::napi_value;
 use nj_sys::napi_callback_info;
 use nj_sys::napi_valuetype;
+use nj_sys::napi_threadsafe_function_call_js;
+
 
 use crate as nj_core;
 use crate::c_str;
@@ -64,8 +66,7 @@ impl JsEnv {
     pub fn call_function(&self,
         recv: napi_value,
         func: napi_value,
-        argc: usize,
-        mut argv: napi_value,
+        mut argv: Vec<napi_value>,
         ) -> napi_value {
 
         use nj_sys::napi_call_function;
@@ -77,8 +78,8 @@ impl JsEnv {
                 self.0,
                 recv,
                 func,
-                argc,
-                &mut argv,
+                argv.len(),
+                argv.as_mut_ptr(),
                 &mut result
             )
         );
@@ -155,6 +156,39 @@ impl JsCallback  {
         );
 
         value
+    }
+
+
+    pub fn create_thread_safe_function(
+        &self, 
+        name: &str, 
+        index: usize, 
+        call_js_cb: napi_threadsafe_function_call_js) -> crate::ThreadSafeFunction {
+
+        use nj_core::sys::napi_create_threadsafe_function;
+
+        let work_name = self.env.create_string_utf8(name);
+
+        let mut tsfn = ptr::null_mut();
+
+        crate::napi_call!(
+            napi_create_threadsafe_function(
+                self.env.inner(),
+                self.args[index],
+                ptr::null_mut(),
+                work_name,
+                0,
+                1,
+                ptr::null_mut(),
+                None,
+                ptr::null_mut(),
+                call_js_cb,
+                &mut tsfn
+            )
+        );
+
+        tsfn.into()
+
     }
 
 }

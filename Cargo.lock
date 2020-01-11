@@ -1790,12 +1790,9 @@ dependencies = [
 name = "nj-sys-example-hello-async-cb"
 version = "0.0.1"
 dependencies = [
- "byte-strings",
- "ctor",
  "flv-future-core",
  "libc",
  "nj-core",
- "nj-sys",
 ]
 
 [[package]]
