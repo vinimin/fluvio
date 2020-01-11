@@ -1,9 +1,11 @@
 mod basic;
 mod error;
 mod thread_fn;
+mod property;
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
+pub use property::PropertyBuilder;
 
 pub use ctor::ctor;
 pub use byte_strings::c_str;

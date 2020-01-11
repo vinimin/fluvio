@@ -7,6 +7,8 @@ use crate::sys::napi_valuetype;
 use crate::sys::napi_threadsafe_function_call_js;
 
 use crate::c_str;
+use crate::PropertyBuilder;
+use crate::napi_call;
 
 use crate as nj_core;
 
@@ -22,12 +24,13 @@ impl JsEnv {
         self.0
     }
 
+
     pub fn create_string_utf8(&self,r_string: &str)  -> napi_value {
 
         use nj_sys::napi_create_string_utf8;
 
         let mut js_value = ptr::null_mut();
-        crate::napi_call!(
+        napi_call!(
             napi_create_string_utf8(
                 self.0,
                 r_string.as_ptr() as *const i8,
@@ -43,7 +46,7 @@ impl JsEnv {
         use nj_sys::napi_get_global;
 
         let mut js_global = ptr::null_mut();
-        crate::napi_call!(
+        napi_call!(
             napi_get_global(self.0, &mut js_global)
         );
         js_global
@@ -59,7 +62,7 @@ impl JsEnv {
             
         let mut result = ptr::null_mut();
 
-        crate::napi_call!(
+        napi_call!(
             napi_call_function(
                 self.0,
                 recv,
@@ -83,7 +86,7 @@ impl JsEnv {
 
         let mut args = vec![ptr::null_mut();arg_count];
         
-        crate::napi_call!(
+        napi_call!(
             napi_get_cb_info(
                 self.0, 
                 info,
@@ -123,7 +126,7 @@ impl JsCallback  {
 
         let mut valuetype: napi_valuetype = napi_valuetype_napi_number;
   
-        crate::napi_call!(
+        napi_call!(
             napi_typeof(
                 self.env.inner(),
                 self.args[index],
@@ -137,7 +140,7 @@ impl JsCallback  {
 
         let mut value: f64 = 0.0;
 
-        crate::napi_call!(
+        napi_call!(
             napi_get_value_double(self.env.inner(), self.args[index], &mut value)
         );
 
@@ -157,7 +160,7 @@ impl JsCallback  {
 
         let mut tsfn = ptr::null_mut();
 
-        crate::napi_call!(
+        napi_call!(
             napi_create_threadsafe_function(
                 self.env.inner(),
                 self.args[index],
@@ -178,6 +181,42 @@ impl JsCallback  {
     }
 
 }
+
+
+pub struct JsExports {
+    inner: napi_value,
+    env: JsEnv
+}
+
+impl JsExports {
+
+    pub fn new(env: napi_env,exports: napi_value) -> Self {
+        Self {
+            inner: exports,
+            env: JsEnv::new(env)
+        }
+    }
+
+    pub fn prop_builder(&self,name: &str) -> PropertyBuilder {
+        PropertyBuilder::new(name)
+    }
+
+
+    pub fn define_property(&self, mut properties : Vec<crate::sys::napi_property_descriptor>) {
+       
+        napi_call!(
+            crate::sys::napi_define_properties(
+                self.env.inner(), 
+                self.inner , 
+                properties.len(),
+                properties.as_mut_ptr()
+            )
+        );
+        
+    }
+
+}
+
 
 
 

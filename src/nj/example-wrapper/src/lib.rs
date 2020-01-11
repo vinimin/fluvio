@@ -20,6 +20,13 @@ pub extern "C" fn hello_world (env: napi_env, _cb_info: napi_callback_info) -> n
 #[no_mangle]
 pub extern "C" fn init_hello (env: napi_env, exports: napi_value ) -> napi_value{
 
+    napi_property_descriptor properties[] = {
+        {"value", 0, 0, GetValue, SetValue, 0, napi_default, 0},
+        DECLARE_NAPI_METHOD("plusOne", PlusOne),
+        DECLARE_NAPI_METHOD("multiply", Multiply),
+    };
+  
+
     define_property!("hello",env,exports,hello_world);
 
     return exports;

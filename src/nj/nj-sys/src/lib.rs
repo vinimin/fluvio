@@ -7,3 +7,6 @@ mod binding;
 pub use binding::*;
 
 unsafe impl Sync for binding::napi_module{}
+
+
+pub type napi_callback_raw = unsafe extern "C" fn(env: crate::napi_env, info: crate::napi_callback_info) -> crate::napi_value;
