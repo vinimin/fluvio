@@ -5,6 +5,7 @@ use crate::sys::napi_env;
 use crate::sys::napi_value;
 use crate::sys::napi_callback_info;
 use crate::sys::napi_callback_raw;
+use crate::sys::napi_finalize_raw;
 use crate::sys::napi_valuetype;
 use crate::sys::napi_ref;
 use crate::sys::napi_threadsafe_function_call_js;
@@ -90,20 +91,23 @@ impl JsEnv {
         let mut argc: size_t  = arg_count as size_t;
 
         let mut args = vec![ptr::null_mut();arg_count];
-        
+        let mut this = ptr::null_mut();
+
         napi_call!(
             napi_get_cb_info(
                 self.0, 
                 info,
                  &mut argc,
                  args.as_mut_ptr(),
-                  ptr::null_mut(),
-                   ptr::null_mut()
+                 &mut this,
+                ptr::null_mut()
             ));
 
         JsCallback {
+            env: JsEnv::new(self.0),
             args,
-            env: JsEnv::new(self.0)
+            this
+            
         }
     }
 
@@ -142,18 +146,57 @@ impl JsEnv {
 
         result
     }
+
+
+    pub fn get_new_target(&self, info: napi_callback_info) -> napi_value {
+
+        let mut result = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_get_new_target(
+                self.0,
+                info,
+                &mut result
+            )
+        );
+
+        result
+
+    }
+
+    pub fn wrap(&self,js_object: napi_value,rust_obj: *mut u8,finalize: napi_finalize_raw) -> napi_ref {
+        let mut result = ptr::null_mut();
+
+        napi_call!(
+            crate::sys::napi_wrap(
+                self.0,
+                js_object,
+                rust_obj as *mut core::ffi::c_void,
+                Some(finalize),
+                ptr::null_mut(),
+                &mut result
+            )
+        );
+
+        result
+    }
 }
 
 
 pub struct JsCallback {
-    args: Vec<napi_value>,
-    env:  JsEnv
+    env:  JsEnv,
+    this: napi_value,
+    args: Vec<napi_value>
 }
+   
 
 impl JsCallback  {
 
     pub fn args(&self,index: usize) -> napi_value {
         self.args[index]
+    }
+
+    pub fn this(&self) -> napi_value {
+        self.this
     }
 
 

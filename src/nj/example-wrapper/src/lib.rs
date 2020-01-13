@@ -6,10 +6,23 @@ use nj_sys::napi_env;
 use nj_sys::napi_callback_info;
 use nj_sys::napi_ref;
 use nj_core::register_module;
-use nj_core::define_property;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
 use nj_core::PropertyBuilder;
+
+struct MyObject {
+    val: f64,
+    wrapper: napi_ref
+}
+
+impl MyObject {
+    pub fn new(val: f64) -> Self {
+        Self {
+            val,
+            wrapper: ptr::null_mut()
+        }
+    }
+}
 
 #[no_mangle]
 pub extern "C" fn hello_world (env: napi_env, _cb_info: napi_callback_info) -> napi_value {
@@ -21,8 +34,33 @@ pub extern "C" fn hello_world (env: napi_env, _cb_info: napi_callback_info) -> n
 
 static mut CONSTRUCTOR: napi_ref = ptr::null_mut();
 
+pub extern "C" fn finalize_my_object(env: napi_env,finalize_data: *mut ::std::os::raw::c_void,
+    finalize_hint: *mut ::std::os::raw::c_void
+) {
+
+    println!("my object finalize");
+}
+
+
 #[no_mangle]
 pub extern "C" fn init_my_object(env: napi_env , info: napi_callback_info ) -> napi_value {
+
+    let js_env = JsEnv::new(env);
+    let target = js_env.get_new_target(info);
+
+    if target == ptr::null_mut() {
+        // invokes as plain function
+
+    } else {
+        // Invoked as constructor: `new MyObject(...)`
+        let js_cb = js_env.get_cb_info(info,1);
+
+        let value = js_cb.get_value(0);
+
+        let my_obj = Box::into_raw(Box::new(MyObject::new(value)));
+
+        let wrap =  js_env.wrap(js_cb.this(),my_obj as *mut u8,finalize_my_object);
+    }
 
     ptr::null_mut()
 }
