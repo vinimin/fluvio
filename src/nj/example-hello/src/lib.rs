@@ -1,10 +1,11 @@
 use std::ptr;
 
 
-use nj_sys::napi_value;
-use nj_sys::napi_env;
-use nj_sys::napi_callback_info;
+use nj_core::sys::napi_value;
+use nj_core::sys::napi_env;
+use nj_core::sys::napi_callback_info;
 use nj_core::register_module;
+use nj_core::c_str;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
 use nj_core::PropertyBuilder;
@@ -24,7 +25,7 @@ pub extern "C" fn init_hello (env: napi_env, exports: napi_value ) -> napi_value
     let js_exports = JsExports::new(env,exports);
     let prop = js_exports.prop_builder()
         .add(
-            PropertyBuilder::new("hello")
+            PropertyBuilder::new(c_str!("hello"))
                 .method(hello_world)
                 .build()
         ).build();

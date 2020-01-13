@@ -145,6 +145,7 @@ impl JsEnv {
         
         let mut js_constructor = ptr::null_mut();
 
+        println!("defining class: {} with {} properties",name,properties.len());
         napi_call!(
             crate::sys::napi_define_class(
                 self.0, 

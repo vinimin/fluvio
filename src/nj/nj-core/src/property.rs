@@ -1,5 +1,5 @@
 use std::ptr;
-use std::ffi::CString;
+use std::ffi::CStr;
 
 use crate::sys::napi_property_descriptor;
 use crate::sys::napi_property_attributes_napi_default;
@@ -9,11 +9,10 @@ pub struct PropertyBuilder(napi_property_descriptor);
 
 impl PropertyBuilder {
 
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: &CStr) -> Self {
 
-        let c_name = CString::new(name).expect("should work");
         let descriptor = napi_property_descriptor {
-            utf8name: c_name.as_ptr(),
+            utf8name: name.as_ptr(),
             name: ptr::null_mut(),
             method: None,
             getter: None,
@@ -29,6 +28,11 @@ impl PropertyBuilder {
     pub fn method(mut self,method: napi_callback_raw) -> Self {
 
         self.0.method = Some(method);
+        self
+    }
+
+    pub fn getter(mut self,getter: napi_callback_raw) -> Self {
+        self.0.getter = Some(getter);
         self
     }
 
