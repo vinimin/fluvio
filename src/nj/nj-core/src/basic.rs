@@ -1,14 +1,19 @@
 use std::ptr;
+use std::ffi::CString;
 
 use crate::sys::napi_env;
 use crate::sys::napi_value;
 use crate::sys::napi_callback_info;
+use crate::sys::napi_callback_raw;
 use crate::sys::napi_valuetype;
+use crate::sys::napi_ref;
 use crate::sys::napi_threadsafe_function_call_js;
+use crate::sys::napi_property_descriptor;
 
 use crate::c_str;
-use crate::PropertyBuilder;
+use crate::PropertiesBuilder;
 use crate::napi_call;
+
 
 use crate as nj_core;
 
@@ -101,6 +106,42 @@ impl JsEnv {
             env: JsEnv::new(self.0)
         }
     }
+
+    /// define classes
+    pub fn define_class(&self, name: &str,constructor: napi_callback_raw,mut properties: Vec<napi_property_descriptor>)  -> napi_value {
+        
+        let mut js_constructor = ptr::null_mut();
+
+        napi_call!(
+            crate::sys::napi_define_class(
+                self.0, 
+                name.as_ptr() as *const i8,
+                name.len(),
+                Some(constructor), 
+                ptr::null_mut(), 
+                properties.len(), 
+                properties.as_mut_ptr(),
+                &mut js_constructor
+            )
+        ); 
+        
+        js_constructor
+    }
+
+    pub fn create_reference(&self, cons: napi_value,count: u32)  -> napi_ref {
+        
+        let mut result = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_create_reference(
+                self.0,
+                cons,
+                count,
+                &mut result
+            )
+        );
+
+        result
+    }
 }
 
 
@@ -180,6 +221,10 @@ impl JsCallback  {
 
     }
 
+    
+    
+    
+
 }
 
 
@@ -197,8 +242,12 @@ impl JsExports {
         }
     }
 
-    pub fn prop_builder(&self,name: &str) -> PropertyBuilder {
-        PropertyBuilder::new(name)
+    pub fn env(&self) -> &JsEnv {
+        &self.env
+    }
+
+    pub fn prop_builder(&self) -> PropertiesBuilder {
+        PropertiesBuilder::new()
     }
 
 
@@ -215,6 +264,21 @@ impl JsExports {
         
     }
 
+    pub fn set_name_property(&self,name: &str, js_class: napi_value)  {
+        
+        let c_name = CString::new(name).expect("should work");
+
+        napi_call!(
+            crate::sys::napi_set_named_property(
+                self.env.inner(),
+                self.inner,
+                c_name.as_ptr(),
+                js_class
+            )
+        )
+
+    }
+  
 }
 
 

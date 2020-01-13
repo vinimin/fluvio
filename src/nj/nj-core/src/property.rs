@@ -32,9 +32,29 @@ impl PropertyBuilder {
         self
     }
 
-    pub fn build (self) -> Vec<napi_property_descriptor> {
-        vec![self.0]
+    pub fn build (self) -> napi_property_descriptor {
+        self.0
     }
 
+}
 
+
+
+
+pub struct PropertiesBuilder(Vec<napi_property_descriptor>);
+
+impl PropertiesBuilder {
+
+    pub fn new() -> Self {
+        Self(vec![])
+    }
+
+    pub fn add(mut self, property: napi_property_descriptor) -> Self {
+       self.0.push(property);
+       self
+    }
+
+    pub fn build(self) -> Vec<napi_property_descriptor> {
+        self.0
+    }
 }
