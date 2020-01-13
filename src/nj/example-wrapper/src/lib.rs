@@ -77,13 +77,17 @@ impl MyObject {
             println!("value passed: {}",value);
 
             let mut my_obj = Box::new(MyObject::new(value));
-            let my_obj_raw_ptr: *mut Box<MyObject> = &mut my_obj;
+            let raw_ptr = Box::into_raw(my_obj);
 
-            let wrap =  js_env.wrap(js_cb.this(),my_obj_raw_ptr as *mut u8,Self::js_finalize);
-            my_obj.set_wrapper(wrap);
+            let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,Self::js_finalize);
+           
+            unsafe {
+                let rust_ref: &mut MyObject = &mut * raw_ptr;
+                rust_ref.set_wrapper(wrap);
 
-            Box::into_raw(my_obj);     // don't manage this object anymore
+            }
 
+            
             js_cb.this_owned()
         }
     }
@@ -99,7 +103,7 @@ impl MyObject {
 
         let js_cb = js_env.get_cb_info(info,0); // there is no argument
 
-        let my_obj = js_cb.unwrap::<Box<MyObject>>();
+        let my_obj = js_cb.unwrap::<MyObject>();
 
         my_obj.plus_one();
 
@@ -118,9 +122,11 @@ impl MyObject {
         let js_env = JsEnv::new(env);
 
         let js_cb = js_env.get_cb_info(info,0); // there is no argument
-        let my_obj = js_cb.unwrap::<Box<MyObject>>();
+        let my_obj = js_cb.unwrap::<MyObject>();
 
         let new_val = my_obj.value();
+
+        println!("rust object value is: {}",new_val);
     
         js_env.create_double(my_obj.value())
     }   
