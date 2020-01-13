@@ -47,6 +47,19 @@ impl JsEnv {
         js_value
     }
 
+    pub fn create_double(&self,value: f64) -> napi_value {
+
+        let mut result: napi_value = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_create_double(
+                self.0,
+                value,
+                &mut result
+            )
+        );
+        result
+    }
+
     pub fn get_global(&self) -> napi_value {
 
         use nj_sys::napi_get_global;
@@ -88,20 +101,36 @@ impl JsEnv {
         use libc::size_t;
         use nj_sys::napi_get_cb_info;
 
-        let mut argc: size_t  = arg_count as size_t;
-
-        let mut args = vec![ptr::null_mut();arg_count];
         let mut this = ptr::null_mut();
 
-        napi_call!(
-            napi_get_cb_info(
-                self.0, 
-                info,
-                 &mut argc,
-                 args.as_mut_ptr(),
-                 &mut this,
-                ptr::null_mut()
-            ));
+        let args = if arg_count == 0 {
+            napi_call!(
+                napi_get_cb_info(
+                    self.0, 
+                    info,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &mut this,
+                    ptr::null_mut()
+                ));
+            vec![]
+
+        } else {
+            let mut argc: size_t  = arg_count as size_t;
+            let mut args = vec![ptr::null_mut();arg_count];
+            napi_call!(
+                napi_get_cb_info(
+                    self.0, 
+                    info,
+                    &mut argc,
+                    args.as_mut_ptr(),
+                    &mut this,
+                    ptr::null_mut()
+                ));
+            args
+        };
+    
+        
 
         JsCallback {
             env: JsEnv::new(self.0),
@@ -179,6 +208,25 @@ impl JsEnv {
 
         result
     }
+
+    pub fn unwrap<T>(&self,js_this: napi_value) -> &mut T {
+
+        let mut result: *mut ::std::os::raw::c_void = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_unwrap(
+                self.0,
+                js_this,
+                &mut result
+            )
+        );
+
+        unsafe { 
+            let rust_ref: &mut T  = &mut * (result as *mut T);
+            rust_ref
+        }
+
+        
+    }
 }
 
 
@@ -196,6 +244,10 @@ impl JsCallback  {
     }
 
     pub fn this(&self) -> napi_value {
+        self.this
+    }
+
+    pub fn this_owned(self) -> napi_value {
         self.this
     }
 
@@ -262,6 +314,11 @@ impl JsCallback  {
 
         tsfn.into()
 
+    }
+
+    pub fn unwrap<T>(&self) -> &mut T  {
+
+        self.env.unwrap(self.this())
     }
 
     

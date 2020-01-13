@@ -1,3 +1,5 @@
 let addon = require('./dylib');
 
-console.log(addon.hello()); // 'hello'
+let obj = new addon.MyObject(10);
+
+console.log(obj.plusOne()); // 11
