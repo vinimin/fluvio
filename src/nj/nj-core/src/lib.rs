@@ -2,11 +2,14 @@ mod basic;
 mod error;
 mod thread_fn;
 mod property;
+mod object;
+
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
 pub use property::PropertyBuilder;
 pub use property::PropertiesBuilder;
+pub use object::JSClass;
 
 pub use ctor::ctor;
 pub use byte_strings::c_str;
