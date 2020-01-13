@@ -1758,6 +1758,7 @@ dependencies = [
  "nj-example-hello",
  "nj-example-hello-async-cb",
  "nj-example-hello-cb",
+ "nj-example-wrap-async",
  "nj-example-wrapper",
  "nj-sys",
 ]
@@ -1790,6 +1791,13 @@ dependencies = [
 
 [[package]]
 name = "nj-example-hello-cb"
+version = "0.0.1"
+dependencies = [
+ "nj-core",
+]
+
+[[package]]
+name = "nj-example-wrap-async"
 version = "0.0.1"
 dependencies = [
  "nj-core",
