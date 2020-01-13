@@ -224,10 +224,38 @@ impl JsEnv {
         unsafe { 
             let rust_ref: &mut T  = &mut * (result as *mut T);
             rust_ref
-        }
-
-        
+        }   
     }
+
+    pub fn new_instance(&self, constructor: napi_value,mut args: Vec<napi_value>) -> napi_value {
+        let mut result = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_new_instance(
+                self.0,
+                constructor,
+                args.len(),
+                args.as_mut_ptr(),
+                &mut result
+            )
+        );
+
+        result
+    }
+
+    pub fn get_reference_value(&self,obj_ref: napi_ref)  -> napi_value {
+        
+        let mut result = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_get_reference_value(
+                self.0,
+                obj_ref,
+                &mut result
+            )
+        );
+
+        result
+    }
+
 }
 
 

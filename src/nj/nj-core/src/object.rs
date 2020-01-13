@@ -23,6 +23,8 @@ pub trait JSClass: Sized {
 
     fn set_wrapper(&mut self,wrapper: napi_ref);
 
+    fn set_constructor(constructor: napi_ref);
+
 
     fn properties() -> Vec<napi_property_descriptor>;
 
@@ -32,7 +34,8 @@ pub trait JSClass: Sized {
 
         let properties = Self::properties();
         let js_constructor = js_exports.env().define_class(Self::CLASS_NAME,Self::js_new,properties);
-        let _js_ref = js_exports.env().create_reference(js_constructor, 1);
+        let js_ref = js_exports.env().create_reference(js_constructor, 1);
+        Self::set_constructor(js_ref);
         js_exports.set_name_property(Self::CLASS_NAME,js_constructor);
     }
 
@@ -55,7 +58,7 @@ pub trait JSClass: Sized {
             // Invoked as constructor: `new MyObject(...)`
             let js_cb = js_env.get_cb_info(info,1);
 
-            let mut my_obj =  Self::crate_from_js(&js_cb);
+            let my_obj =  Self::crate_from_js(&js_cb);
             let raw_ptr = Box::into_raw(my_obj);
 
             let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,Self::js_finalize);
@@ -70,8 +73,8 @@ pub trait JSClass: Sized {
         }
     }
 
-    extern "C" fn js_finalize(env: napi_env,finalize_data: *mut ::std::os::raw::c_void,
-        finalize_hint: *mut ::std::os::raw::c_void
+    extern "C" fn js_finalize(_env: napi_env,finalize_data: *mut ::std::os::raw::c_void,
+        _finalize_hint: *mut ::std::os::raw::c_void
     ) {
 
         println!("my object finalize");

@@ -14,6 +14,9 @@ use nj_core::PropertyBuilder;
 use nj_core::val::JsCallback;
 use nj_core::JSClass;
 
+
+static mut MYOBJECT_CONSTRUCTOR: napi_ref = ptr::null_mut();
+
 struct MyObject {
     val: f64,
     wrapper: napi_ref
@@ -73,7 +76,27 @@ impl MyObject {
         println!("rust object value is: {}",new_val);
     
         js_env.create_double(my_obj.value())
-    }   
+    }
+    
+    /// generates new object
+    #[no_mangle]
+    pub extern "C" fn js_multiply(env: napi_env , info: napi_callback_info )  -> napi_value {
+
+        let js_env = JsEnv::new(env);
+
+        let js_cb = js_env.get_cb_info(info,1);     // a single argument
+        let my_obj = js_cb.unwrap::<MyObject>();
+
+        let arg_value = js_cb.get_value(0);
+        let my_val = my_obj.value();
+
+        // multiply two values
+        let new_val = js_env.create_double(arg_value*my_val);
+
+        let constructor = unsafe { js_env.get_reference_value(MYOBJECT_CONSTRUCTOR)};
+
+        js_env.new_instance(constructor,vec![new_val])
+    }
 
 }
 
@@ -96,11 +119,19 @@ impl JSClass for MyObject {
     }
 
 
+    fn set_constructor(constructor: napi_ref) {
+        unsafe {
+            MYOBJECT_CONSTRUCTOR = constructor; 
+        }
+    }
 
     fn properties() -> Vec<napi_property_descriptor> {
         vec![
             PropertyBuilder::new(c_str!("plusOne"))
                 .method(Self::js_plus_one)
+                .build(),
+            PropertyBuilder::new(c_str!("multiply"))
+                .method(Self::js_multiply)
                 .build(),
             PropertyBuilder::new(c_str!("value"))
                 .getter(Self::js_get_value)
