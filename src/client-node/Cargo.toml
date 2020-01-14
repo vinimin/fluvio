@@ -14,8 +14,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 log = "0.4.8"
-libc = "0.2.66"
-ctor = "0.1.12"
 flv-future-core = { path = "../future-helper" }
 flv-future-aio = { path = "../future-aio"}
 kf-protocol = { path = "../kf-protocol"}

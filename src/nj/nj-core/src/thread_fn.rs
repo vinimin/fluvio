@@ -22,12 +22,16 @@ impl ThreadSafeFunction {
         self.0
     }
 
-    pub fn call(&self)  {
+    pub fn call(&self, data: Option<*mut ::std::os::raw::c_void>)  {
         
+        let data_ptr = match data {
+            Some(ptr) => ptr,
+            None => ptr::null_mut()
+        };
         crate::napi_call!(
             crate::sys::napi_call_threadsafe_function(
                 self.0,
-                ptr::null_mut(),
+                data_ptr,
                 crate::sys::napi_threadsafe_function_call_mode_napi_tsfn_blocking
             )
         )

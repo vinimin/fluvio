@@ -17,15 +17,18 @@ pub extern "C" fn hello_callback_js(
     env: napi_env,
     js_cb: napi_value, 
     _context: *mut ::std::os::raw::c_void,
-    _data: *mut ::std::os::raw::c_void) {
+    data: *mut ::std::os::raw::c_void) {
 
     if env != ptr::null_mut() {
 
         let js_env = JsEnv::new(env);
-        let label = js_env.create_string_utf8("hello world");
         let global = js_env.get_global();
 
-        let _ = js_env.call_function(global,js_cb,vec![label]);
+        let my_val: Box<f64> = unsafe { Box::from_raw(data as *mut f64) };
+
+        let label = js_env.create_string_utf8("hello world");
+        let value = js_env.create_double(*my_val);
+        let _ = js_env.call_function(global,js_cb,vec![value,label]);
     }
     
 }
@@ -47,7 +50,12 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
             sleep(Duration::from_secs(1)).await;
             println!("woke from time");
 
-            xtsfn.call();
+            // create new object 
+            let my_val: f64 = 10.0;
+            let my_box = Box::new(my_val);
+            let ptr = Box::into_raw(my_box);
+
+            xtsfn.call(Some(ptr as *mut core::ffi::c_void));
     });
 
     return ptr::null_mut()

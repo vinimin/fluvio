@@ -748,12 +748,10 @@ dependencies = [
 name = "flv-node-client"
 version = "0.2.1"
 dependencies = [
- "ctor",
  "flv-client",
  "flv-future-aio",
  "flv-future-core",
  "kf-protocol",
- "libc",
  "log",
  "nj",
  "types",

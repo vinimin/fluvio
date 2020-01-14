@@ -80,7 +80,7 @@ pub trait JSClass: Sized {
         println!("my object finalize");
         unsafe {
             let ptr: *mut Self = finalize_data as *mut Self;
-            let rust = Box::from_raw(ptr);
+            let _rust = Box::from_raw(ptr);
         }
         
     }
