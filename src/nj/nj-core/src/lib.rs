@@ -3,13 +3,14 @@ mod error;
 mod thread_fn;
 mod property;
 mod object;
-
+mod worker;
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
 pub use property::PropertyBuilder;
 pub use property::PropertiesBuilder;
 pub use object::JSClass;
+pub use worker::JSWorker;
 
 pub use ctor::ctor;
 pub use byte_strings::c_str;
@@ -82,7 +83,7 @@ mod init_module {
     #[macro_export]
     macro_rules! define_property {
 
-        ($property_name: literal,$env:ident,$exports:ident,$method:ident) => {
+        ($property_name: literal,$env:ident,$exports:ident,$method:expr) => {
 
             {
                 let descriptor = nj_core::sys::napi_property_descriptor {
@@ -99,8 +100,7 @@ mod init_module {
                 nj_core::napi_call!(nj_core::sys::napi_define_properties($env, $exports, 1, &descriptor) );
                 
             }
-            
-
+        
         }
     }
     

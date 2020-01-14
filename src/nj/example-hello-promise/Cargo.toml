@@ -11,5 +11,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 libc = "0.2.66"
+async-trait = "0.1.22"
 nj-core = { path = "../nj-core"}
 flv-future-core = { path = "../../future-helper" }

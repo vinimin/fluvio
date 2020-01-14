@@ -1765,8 +1765,10 @@ dependencies = [
 name = "nj-core"
 version = "0.2.1"
 dependencies = [
+ "async-trait",
  "byte-strings",
  "ctor",
+ "flv-future-core",
  "libc",
  "nj-sys",
 ]
@@ -1798,6 +1800,7 @@ dependencies = [
 name = "nj-example-hello-promise"
 version = "0.0.1"
 dependencies = [
+ "async-trait",
  "flv-future-core",
  "libc",
  "nj-core",

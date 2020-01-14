@@ -1,6 +1,8 @@
 use std::ptr;
 use std::time::Duration;
 
+use async_trait::async_trait;
+
 use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
@@ -8,8 +10,7 @@ use nj_core::sys::napi_deferred;
 use nj_core::register_module;
 use nj_core::define_property;
 use nj_core::val::JsEnv;
-use nj_core::ThreadSafeFunction;
-use flv_future_core::spawn;
+use nj_core::JSWorker;
 use flv_future_core::sleep;
 
 struct Worker {
@@ -19,28 +20,23 @@ struct Worker {
 
 unsafe impl Send for Worker{}
 
-impl Worker {
-    fn new(my_data: f64, deferred: napi_deferred) -> Self {
+#[async_trait]
+impl JSWorker for Worker {
+
+    fn deferred(&self) -> napi_deferred {
+        self.deferred
+    }
+
+    fn create_worker(js_env: &JsEnv,info: napi_callback_info,deferred: napi_deferred) -> Self {
+
+        let js_cb = js_env.get_cb_info(info,1);    // a single argument
+        let my_data = js_cb.get_value(0);              // get a value
         Self {
             deferred,
             my_data
         }
     }
-
-
-    /// start the work
-    fn start(self,tsfn: ThreadSafeFunction) {
-
-        spawn(async move {
-            let mut worker = Box::new(self);
-            worker.execute().await;
-            // pass them to thread safe function
-            let ptr = Box::into_raw(worker);
-            tsfn.call(Some(ptr as *mut core::ffi::c_void));
-
-        });
-    }
-
+    
     /// my work
     async fn execute(&mut self) {
 
@@ -50,53 +46,19 @@ impl Worker {
         self.my_data = self.my_data + 10.0;
     }
 
-
-    // complete the work
-    extern "C" fn complete(
-        env: napi_env,
-        _js_cb: napi_value, 
-        _context: *mut ::std::os::raw::c_void,
-        data: *mut ::std::os::raw::c_void) {
-
-        if env != ptr::null_mut() {
-
-            let js_env = JsEnv::new(env);
-        
-            let worker: Box<Self> = unsafe { Box::from_raw(data as *mut Self) };
-            let value = js_env.create_double(worker.my_data);
-
-            js_env.resolve_deferred(worker.deferred,value);
-        }   
+    fn finish(&self, js_env: &JsEnv) -> napi_value {
+        js_env.create_double(self.my_data)
     }
-
 }
 
 
-#[no_mangle]
-pub extern "C" fn hello_callback_promise(env: napi_env,info: napi_callback_info) -> napi_value {
-  
-    
-    let js_env = JsEnv::new(env); 
-    let js_cb = js_env.get_cb_info(info,1);    // a single argument
-    let arg = js_cb.get_value(0);              // get a value
-    let xtsfn = js_env.create_thread_safe_function("async",None,Some(Worker::complete));
-
-    // create promise
-    let (promise,deferred) = js_env.create_promise();
-
-    let worker = Worker::new(arg,deferred);
-    worker.start(xtsfn);
-    
-    return promise
-
-  }
 
 
 
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
-    define_property!("hello",env,exports,hello_callback_promise);
+    define_property!("hello",env,exports,Worker::start_promise);
     
     exports
 }

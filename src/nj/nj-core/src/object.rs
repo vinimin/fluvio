@@ -1,6 +1,5 @@
 use std::ptr;
 
-
 use crate::sys::napi_value;
 use crate::sys::napi_env;
 use crate::sys::napi_callback_info;
