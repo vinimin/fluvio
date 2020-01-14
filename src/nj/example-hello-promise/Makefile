@@ -1,5 +1,5 @@
 
-DYLIB = ../../../target/debug/libnj_example_wrap_async.dylib
+DYLIB = ../../../target/debug/libnj_example_hello_promise.dylib
 
 all:	build
 

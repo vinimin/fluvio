@@ -15,4 +15,4 @@ nj-example-hello = { path = "example-hello", optional = true }
 nj-example-hello-cb = { path = "example-hello-cb", optional = true }
 nj-example-hello-async-cb = { path = "example-hello-async-cb", optional = true }
 nj-example-wrapper = { path = "example-wrapper", optional = true }
-nj-example-wrap-async = { path = "example-wrap-async", optional = true }
+nj-example-hello-promise = { path = "example-hello-promise", optional = true }

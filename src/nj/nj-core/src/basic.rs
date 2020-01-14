@@ -8,6 +8,7 @@ use crate::sys::napi_callback_raw;
 use crate::sys::napi_finalize_raw;
 use crate::sys::napi_valuetype;
 use crate::sys::napi_ref;
+use crate::sys::napi_deferred;
 use crate::sys::napi_threadsafe_function_call_js;
 use crate::sys::napi_property_descriptor;
 
@@ -256,6 +257,67 @@ impl JsEnv {
         result
     }
 
+    /// create promise and deferred
+    pub fn create_promise(&self) -> (napi_value,napi_deferred) {
+
+        let mut deferred = ptr::null_mut();
+        let mut promise = ptr::null_mut();
+
+        napi_call!(
+            crate::sys::napi_create_promise(
+                self.0,
+                &mut deferred,
+                &mut promise
+            )
+        );
+
+        (promise,deferred)
+    }
+
+    pub fn resolve_deferred(&self, deferred: napi_deferred,resolution: napi_value)  {
+
+        napi_call!(
+            crate::sys::napi_resolve_deferred(
+                self.0,
+                deferred,
+                resolution
+            )
+        )
+    }
+
+
+    pub fn create_thread_safe_function (
+        &self, 
+        name: &str, 
+        js_func: Option<napi_value>,
+        call_js_cb: napi_threadsafe_function_call_js) -> crate::ThreadSafeFunction {
+
+        use crate::sys::napi_create_threadsafe_function;
+
+        let work_name = self.create_string_utf8(name);
+
+        let mut tsfn = ptr::null_mut();
+
+        napi_call!(
+            napi_create_threadsafe_function(
+                self.inner(),
+                js_func.unwrap_or(ptr::null_mut()),
+                ptr::null_mut(),
+                work_name,
+                0,
+                1,
+                ptr::null_mut(),
+                None,
+                ptr::null_mut(),
+                call_js_cb,
+                &mut tsfn
+            )
+        );
+
+        tsfn.into()
+
+    }
+
 }
 
 
@@ -319,31 +381,14 @@ impl JsCallback  {
         index: usize, 
         call_js_cb: napi_threadsafe_function_call_js) -> crate::ThreadSafeFunction {
 
-        use crate::sys::napi_create_threadsafe_function;
-
-        let work_name = self.env.create_string_utf8(name);
-
-        let mut tsfn = ptr::null_mut();
-
-        napi_call!(
-            napi_create_threadsafe_function(
-                self.env.inner(),
-                self.args[index],
-                ptr::null_mut(),
-                work_name,
-                0,
-                1,
-                ptr::null_mut(),
-                None,
-                ptr::null_mut(),
-                call_js_cb,
-                &mut tsfn
-            )
-        );
-
-        tsfn.into()
+        self.env.create_thread_safe_function(
+            name,
+            Some(self.args[index]),
+            call_js_cb
+        )
 
     }
+
 
     pub fn unwrap<T>(&self) -> &mut T  {
 

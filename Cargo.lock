@@ -1756,7 +1756,7 @@ dependencies = [
  "nj-example-hello",
  "nj-example-hello-async-cb",
  "nj-example-hello-cb",
- "nj-example-wrap-async",
+ "nj-example-hello-promise",
  "nj-example-wrapper",
  "nj-sys",
 ]
@@ -1795,9 +1795,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "nj-example-wrap-async"
+name = "nj-example-hello-promise"
 version = "0.0.1"
 dependencies = [
+ "flv-future-core",
+ "libc",
  "nj-core",
 ]
 

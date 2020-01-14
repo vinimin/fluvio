@@ -5,12 +5,9 @@ use crate::sys::napi_value;
 use crate::sys::napi_env;
 use crate::sys::napi_callback_info;
 use crate::sys::napi_ref;
-use crate::c_str;
-use crate::register_module;
 use crate::val::JsEnv;
 use crate::val::JsExports;
 use crate::val::JsCallback;
-use crate::PropertyBuilder;
 use crate::sys::napi_property_descriptor;
 
 pub trait JSClass: Sized {
