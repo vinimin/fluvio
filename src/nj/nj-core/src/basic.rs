@@ -1,6 +1,8 @@
 use std::ptr;
 use std::ffi::CString;
 
+use libc::size_t;
+
 use crate::sys::napi_env;
 use crate::sys::napi_value;
 use crate::sys::napi_callback_info;
@@ -99,7 +101,6 @@ impl JsEnv {
     /// get callback with argument size
     pub fn get_cb_info(&self,info: napi_callback_info,arg_count: usize) -> JsCallback {
 
-        use libc::size_t;
         use nj_sys::napi_get_cb_info;
 
         let mut this = ptr::null_mut();
@@ -344,6 +345,29 @@ impl JSValue for f64 {
 
         Ok(value)
     }
+}
+
+impl JSValue for String {
+
+    const JS_TYPE: u32 = crate::sys::napi_valuetype_napi_string;
+
+    fn convert_to_rust(env: &JsEnv,js_value: napi_value) -> Result<Self,NjError> {
+
+        use crate::sys::napi_get_value_string_utf8;
+
+        let mut chars: [u8; 1024] = [0;1024];
+        let mut size: size_t = 0;
+
+        napi_call!(
+            napi_get_value_string_utf8(env.inner(),js_value,chars.as_mut_ptr() as *mut i8,1024,&mut size)
+        );
+
+        let my_chars: Vec<u8> = chars[0..size].into();
+
+        String::from_utf8(my_chars).map_err(|err| err.into())
+    }
+
+
 }
 
 

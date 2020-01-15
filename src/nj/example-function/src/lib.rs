@@ -11,10 +11,19 @@ use nj_core::val::JsExports;
 use nj_core::PropertyBuilder;
 
 #[no_mangle]
-pub extern "C" fn hello_world (env: napi_env, _cb_info: napi_callback_info) -> napi_value {
+pub extern "C" fn hello_world (env: napi_env, cb_info: napi_callback_info) -> napi_value {
 
     let js_env = JsEnv::new(env); 
-    js_env.create_string_utf8("hello world")
+    let js_cb = js_env.get_cb_info(cb_info,1);    // a single argument
+    let msg = match js_cb.get_value::<String>(0) {
+        Ok(val) => val,
+        Err(err) => {
+            println!("error getting string argument: {}",err);
+            return ptr::null_mut();
+        }
+    };
+    let new_string = format!("{} world",msg);
+    js_env.create_string_utf8(&new_string)
 }
 
 
