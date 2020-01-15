@@ -17,7 +17,6 @@ struct Worker {
     my_data: f64
 }
 
-unsafe impl Send for Worker{}
 
 #[async_trait]
 impl JSWorker for Worker {
