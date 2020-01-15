@@ -6,7 +6,6 @@ use async_trait::async_trait;
 use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
-use nj_core::sys::napi_deferred;
 use nj_core::register_module;
 use nj_core::define_property;
 use nj_core::val::JsEnv;
@@ -15,7 +14,6 @@ use nj_core::NjError;
 use flv_future_core::sleep;
 
 struct Worker {
-    deferred: napi_deferred,
     my_data: f64
 }
 
@@ -24,16 +22,11 @@ unsafe impl Send for Worker{}
 #[async_trait]
 impl JSWorker for Worker {
 
-    fn deferred(&self) -> napi_deferred {
-        self.deferred
-    }
-
-    fn create_worker(js_env: &JsEnv,info: napi_callback_info,deferred: napi_deferred) -> Result<Self,NjError> {
+    fn create_worker(js_env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError> {
 
         let js_cb = js_env.get_cb_info(info,1);    // a single argument
         let my_data = js_cb.get_value::<f64>(0)?;  
         Ok(Self {
-            deferred,
             my_data
         })
     }
