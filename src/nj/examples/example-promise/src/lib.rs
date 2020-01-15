@@ -4,15 +4,15 @@ use std::time::Duration;
 use async_trait::async_trait;
 
 use flv_future_core::sleep;
-use nj_core::sys::napi_value;
-use nj_core::sys::napi_env;
-use nj_core::sys::napi_callback_info;
-use nj_core::val::JsEnv;
-use nj_core::JSWorker;
-use nj_core::val::JsExports;
-use nj_core::Property;
-use nj_core::NjError;
-use nj_core::register_module;
+use nj::sys::napi_value;
+use nj::sys::napi_env;
+use nj::sys::napi_callback_info;
+use nj::core::val::JsEnv;
+use nj::core::JSWorker;
+use nj::core::val::JsExports;
+use nj::core::Property;
+use nj::core::NjError;
+use nj::core::register_module;
 
 struct Worker {
     my_data: f64

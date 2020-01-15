@@ -4,15 +4,7 @@ version = "0.2.1"
 authors = ["fluvio.io"]
 edition = "2018"
 
-[features]
-example = []
-
 
 [dependencies]
 nj-sys = { path = "nj-sys" }
 nj-core = { path = "nj-core" }
-nj-example-function = { path = "example-function", optional = true }
-nj-example-cb = { path = "example-cb", optional = true }
-nj-example-async-cb = { path = "example-async-cb", optional = true }
-nj-example-wrapper = { path = "example-wrapper", optional = true }
-nj-example-promise = { path = "example-promise", optional = true }

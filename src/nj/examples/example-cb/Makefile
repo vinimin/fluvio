@@ -1,5 +1,5 @@
 
-DYLIB = ../../../target/debug/libnj_example_cb.dylib
+DYLIB = ../target/debug/libnj_example_cb.dylib
 
 all:	build
 

@@ -3,13 +3,13 @@ use std::time::Duration;
 
 use flv_future_core::spawn;
 use flv_future_core::sleep;
-use nj_core::sys::napi_value;
-use nj_core::sys::napi_env;
-use nj_core::sys::napi_callback_info;
-use nj_core::val::JsExports;
-use nj_core::Property;
-use nj_core::register_module;
-use nj_core::val::JsEnv;
+use nj::sys::napi_value;
+use nj::sys::napi_env;
+use nj::sys::napi_callback_info;
+use nj::core::val::JsExports;
+use nj::core::Property;
+use nj::core::register_module;
+use nj::core::val::JsEnv;
 
 
 // convert the rust data into JS

@@ -63,12 +63,12 @@ mod init_module {
     
         ($name:literal,$reg_fn:ident) => { 
                 
-            #[nj_core::ctor]
+            #[nj::core::ctor]
             fn init_module() {
 
-                use nj_core::c_str;
-                use nj_core::sys::NAPI_VERSION;
-                use nj_core::sys::napi_module;
+                use nj::core::c_str;
+                use nj::core::sys::NAPI_VERSION;
+                use nj::core::sys::napi_module;
 
                 extern "C" {
                     pub fn napi_module_register(mod_: *mut napi_module);

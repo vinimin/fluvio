@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-nj-core = { path = "../nj-core"}
+nj = { path = "../.."}
