@@ -1,5 +1,4 @@
 use std::ptr;
-use std::ffi::CStr;
 
 use crate::sys::napi_property_descriptor;
 use crate::sys::napi_property_attributes_napi_default;
@@ -9,10 +8,10 @@ pub struct PropertyBuilder(napi_property_descriptor);
 
 impl PropertyBuilder {
 
-    pub fn new(name: &CStr) -> Self {
+    pub fn new(name: &str) -> Self {
 
         let descriptor = napi_property_descriptor {
-            utf8name: name.as_ptr(),
+            utf8name: name.as_ptr() as *const i8,
             name: ptr::null_mut(),
             method: None,
             getter: None,

@@ -1,6 +1,5 @@
 use std::ptr;
 
-
 use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;

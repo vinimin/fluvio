@@ -421,7 +421,7 @@ impl JsCallback  {
             ));
 
         if  valuetype != T::JS_TYPE {
-            unsafe { napi_throw_type_error(self.env.inner(), ptr::null_mut(), c_str!("invalid type").as_ptr()) };
+            unsafe { napi_throw_type_error(self.env.inner(), ptr::null_mut(), c_str!("invalid type").as_ptr() as *const i8) };
             return Err(NjError::InvalidType)
         }
 

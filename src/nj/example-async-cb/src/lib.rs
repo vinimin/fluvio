@@ -1,16 +1,16 @@
 use std::ptr;
 use std::time::Duration;
 
+use flv_future_core::spawn;
+use flv_future_core::sleep;
 use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
-
-
-use flv_future_core::spawn;
-use flv_future_core::sleep;
+use nj_core::val::JsExports;
+use nj_core::PropertyBuilder;
 use nj_core::register_module;
-use nj_core::define_property;
 use nj_core::val::JsEnv;
+use nj_core::c_str;
 
 // convert the rust data into JS
 pub extern "C" fn hello_callback_js(
@@ -67,7 +67,15 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
-    define_property!("hello",env,exports,hello_callback_async);
+    let js_exports = JsExports::new(env,exports);
+    let prop = js_exports.prop_builder()
+        .add(
+            PropertyBuilder::new(c_str!("hello"))
+                .method(hello_callback_async)
+                .build()
+        ).build();
+    
+    js_exports.define_property(prop);
     
     exports
 }

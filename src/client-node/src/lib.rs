@@ -4,17 +4,14 @@ mod sc;
 
 use std::ptr;
 
-use flv_future_core::spawn;
-use flv_future_core::sleep;
-
-static mut CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
-
-
+use nj_core::sys::napi_value;
+use nj_core::sys::napi_env;
+use sc::ConnectScWorker;
 
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
-    define_property!("connectSc",env,exports,hello_callback_async);
+    define_property!("connectSc",env,exports,ConnectScWorker::start_promise);
     
     exports
 }

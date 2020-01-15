@@ -15,7 +15,7 @@ pub use worker::JSWorker;
 pub use convert::ToJsValue;
 
 pub use ctor::ctor;
-pub use byte_strings::c_str;
+
 
 pub mod sys {
     pub use nj_sys::*;
@@ -42,6 +42,19 @@ macro_rules! napi_call {
 }
 
 
+
+#[macro_export]
+macro_rules! c_str {
+    ($string:literal) =>  {
+        {
+            const _C_STRING: &'static str = concat!($string,"\0");       
+            _C_STRING
+        }
+    }
+}
+
+
+
 mod init_module {
 
 
@@ -64,9 +77,9 @@ mod init_module {
                 static mut _module: napi_module  = napi_module {
                     nm_version: NAPI_VERSION as i32,
                     nm_flags: 0,
-                    nm_filename: c_str!("lib.rs").as_ptr(),
+                    nm_filename: c_str!("lib.rs").as_ptr() as *const i8,
                     nm_register_func: Some($reg_fn),
-                    nm_modname:  c_str!($name).as_ptr(),
+                    nm_modname:  c_str!($name).as_ptr() as *const i8,
                     nm_priv: ptr::null_mut(),
                     reserved: [ptr::null_mut(),ptr::null_mut(),ptr::null_mut(),ptr::null_mut()]
                 };
@@ -80,31 +93,6 @@ mod init_module {
         }
     }
 
-    
-    /// add new property descriptor
-    #[macro_export]
-    macro_rules! define_property {
-
-        ($property_name: literal,$env:ident,$exports:ident,$method:expr) => {
-
-            {
-                let descriptor = nj_core::sys::napi_property_descriptor {
-                    utf8name: nj_core::c_str!($property_name).as_ptr(),
-                    name: ptr::null_mut(),
-                    method: Some($method),
-                    getter: None,
-                    setter: None,
-                    value: ptr::null_mut(),
-                    attributes: nj_core::sys::napi_property_attributes_napi_default,
-                    data: ptr::null_mut()
-                };
-
-                nj_core::napi_call!(nj_core::sys::napi_define_properties($env, $exports, 1, &descriptor) );
-                
-            }
-        
-        }
-    }
     
     /// export a single function in the module. 
     /// this overrides exports and return empty exports
@@ -120,7 +108,7 @@ mod init_module {
 
                 nj_core::napi_call!(
                     napi_create_function(
-                        env, nj_core::c_str!(""), 
+                        env, nj_core::c_str!("") as const* i8, 
                         nj_core::sys::NAPI_AUTO_LENGTH as usize,
                         Some(func), 
                         ptr::null_mut(),
