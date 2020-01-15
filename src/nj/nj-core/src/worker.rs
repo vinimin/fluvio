@@ -10,16 +10,26 @@ use crate::val::JsEnv;
 use crate::NjError;
 use crate::sys::napi_env;
 use crate::sys::napi_callback_info;
+use crate::ToJsValue;
+use crate::ThreadSafeFunction;
 
-pub struct WorkerContainer<T> {
-    deferred: napi_deferred,
-    worker: T
+
+struct JsDeferred(napi_deferred);
+unsafe impl Send for JsDeferred{}
+
+pub struct WorkerResult<T,E> {
+    deferred: JsDeferred,
+    result: Result<T,E>
 }
 
-unsafe impl <T>Send for WorkerContainer<T>{}
+
+
 
 #[async_trait]
 pub trait JSWorker: Sized + Send + 'static {
+
+    type Output: ToJsValue;
+    type Error: ToJsValue;
 
     /// create new worker based on argument based in the callback
     fn create_worker(env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError>;
@@ -31,37 +41,27 @@ pub trait JSWorker: Sized + Send + 'static {
         let js_env = JsEnv::new(env); 
         let (promise,deferred) = js_env.create_promise();
 
-        let tsfn = js_env.create_thread_safe_function("async",None,Some(Self::complete));
+        let function_name = format!("async_worker_th_{}",std::any::type_name::<Self>());
+        let ts_fn = js_env.create_thread_safe_function(&function_name,None,Some(Self::complete));
+        let js_deferred = JsDeferred(deferred);
 
-        let worker_container =  match Self::create_worker(&js_env,info) {
-            Ok(worker) => {
-                WorkerContainer {
-                    deferred,
-                    worker
-                }
-            },
+        let mut worker =  match Self::create_worker(&js_env,info) {
+            Ok(worker) => worker,
             Err(err) =>  {
                 error!("error creating worker: {}",err);
                 return ptr::null_mut()
             }
         };
-        let mut boxed_worker = Box::new(worker_container);
         spawn(async move {
-            boxed_worker.worker.execute().await;
-            let ptr = Box::into_raw(boxed_worker);
-            tsfn.call(Some(ptr as *mut core::ffi::c_void));
-
+            let result = worker.execute().await;
+            finish_worker(ts_fn,result,js_deferred);
         });
 
         promise
     }
 
     /// execute this in async worker thread
-    async fn execute(&mut self);
-
-    /// when work is finished, return JS object which will be evaluate as deferred
-    fn finish(&self, env: &JsEnv) -> napi_value;
-
+    async fn execute(&mut self) -> Result<Self::Output,Self::Error>;
 
     // complete the work
     extern "C" fn complete(
@@ -74,10 +74,26 @@ pub trait JSWorker: Sized + Send + 'static {
 
             let js_env = JsEnv::new(env);
         
-            let worker_container: Box<WorkerContainer<Self>> = unsafe { Box::from_raw(data as *mut WorkerContainer<Self>) };
-            let value = worker_container.worker.finish(&js_env);
-            js_env.resolve_deferred(worker_container.deferred,value);
+            let worker_result: Box<WorkerResult<Self::Output,Self::Error>> = unsafe { Box::from_raw(data as *mut WorkerResult<Self::Output,Self::Error>) };
+            match worker_result.result {
+                Ok(val) => js_env.resolve_deferred(worker_result.deferred.0,val.to_js(&js_env)),
+                Err(err) => js_env.reject_deferred(worker_result.deferred.0,err.to_js(&js_env))
+            }
+            
         }   
     }
 
 }
+
+fn finish_worker<T,E>(ts_fn: ThreadSafeFunction,result: Result<T,E>, deferred: JsDeferred) 
+    where T: ToJsValue, E: ToJsValue 
+{
+    let boxed_worker = Box::new(WorkerResult{
+        result,
+        deferred
+    });
+    let ptr = Box::into_raw(boxed_worker);
+    ts_fn.call(Some(ptr as *mut core::ffi::c_void));
+
+}
+

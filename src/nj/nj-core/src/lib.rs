@@ -4,6 +4,7 @@ mod thread_fn;
 mod property;
 mod class;
 mod worker;
+mod convert;
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
@@ -11,6 +12,7 @@ pub use property::PropertyBuilder;
 pub use property::PropertiesBuilder;
 pub use class::JSClass;
 pub use worker::JSWorker;
+pub use convert::ToJsValue;
 
 pub use ctor::ctor;
 pub use byte_strings::c_str;

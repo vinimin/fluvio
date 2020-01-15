@@ -21,6 +21,10 @@ struct Worker {
 #[async_trait]
 impl JSWorker for Worker {
 
+    type Output = f64;
+
+    type Error = NjError;
+
     fn create_worker(js_env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError> {
 
         let js_cb = js_env.get_cb_info(info,1);    // a single argument
@@ -31,17 +35,15 @@ impl JSWorker for Worker {
     }
     
     /// my work
-    async fn execute(&mut self) {
+    async fn execute(&mut self) -> Result<Self::Output,Self::Error> {
 
         println!("sleeping");
         sleep(Duration::from_secs(1)).await;
         println!("woke and adding 10.0");
         self.my_data = self.my_data + 10.0;
+        Ok(self.my_data)
     }
 
-    fn finish(&self, js_env: &JsEnv) -> napi_value {
-        js_env.create_double(self.my_data)
-    }
 }
 
 

@@ -286,6 +286,17 @@ impl JsEnv {
         )
     }
 
+    pub fn reject_deferred(&self, deferred: napi_deferred,rejection: napi_value)  {
+
+        napi_call!(
+            crate::sys::napi_reject_deferred(
+                self.0,
+                deferred,
+                rejection
+            )
+        )
+    }
+
 
     pub fn create_thread_safe_function (
         &self, 
