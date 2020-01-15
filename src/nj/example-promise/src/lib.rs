@@ -11,6 +11,7 @@ use nj_core::register_module;
 use nj_core::define_property;
 use nj_core::val::JsEnv;
 use nj_core::JSWorker;
+use nj_core::NjError;
 use flv_future_core::sleep;
 
 struct Worker {
@@ -27,14 +28,14 @@ impl JSWorker for Worker {
         self.deferred
     }
 
-    fn create_worker(js_env: &JsEnv,info: napi_callback_info,deferred: napi_deferred) -> Self {
+    fn create_worker(js_env: &JsEnv,info: napi_callback_info,deferred: napi_deferred) -> Result<Self,NjError> {
 
         let js_cb = js_env.get_cb_info(info,1);    // a single argument
-        let my_data = js_cb.get_value(0);              // get a value
-        Self {
+        let my_data = js_cb.get_value::<f64>(0)?;  
+        Ok(Self {
             deferred,
             my_data
-        }
+        })
     }
     
     /// my work

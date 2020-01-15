@@ -2,14 +2,14 @@ mod basic;
 mod error;
 mod thread_fn;
 mod property;
-mod object;
+mod class;
 mod worker;
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
 pub use property::PropertyBuilder;
 pub use property::PropertiesBuilder;
-pub use object::JSClass;
+pub use class::JSClass;
 pub use worker::JSWorker;
 
 pub use ctor::ctor;

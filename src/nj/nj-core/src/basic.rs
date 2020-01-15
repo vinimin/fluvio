@@ -15,7 +15,7 @@ use crate::sys::napi_property_descriptor;
 use crate::c_str;
 use crate::PropertiesBuilder;
 use crate::napi_call;
-
+use crate::NjError;
 
 use crate as nj_core;
 
@@ -320,6 +320,32 @@ impl JsEnv {
 
 }
 
+pub trait JSValue: Sized {
+
+    const JS_TYPE: u32;
+
+    fn convert_to_rust(env: &JsEnv,js_value: napi_value) -> Result<Self,NjError>;
+}
+
+impl JSValue for f64 {
+
+
+    const JS_TYPE: u32 = crate::sys::napi_valuetype_napi_number;
+
+    fn convert_to_rust(env: &JsEnv,js_value: napi_value) -> Result<Self,NjError> {
+
+        use crate::sys::napi_get_value_double;
+
+        let mut value: f64 = 0.0;
+
+        napi_call!(
+            napi_get_value_double(env.inner(),js_value, &mut value)
+        );
+
+        Ok(value)
+    }
+}
+
 
 pub struct JsCallback {
     env:  JsEnv,
@@ -342,16 +368,15 @@ impl JsCallback  {
         self.this
     }
 
-
-    pub fn get_value(&self, index: usize) -> f64 {
-
-        use crate::sys::napi_valuetype_napi_number;
+    /// get rust value out of callback info
+    pub fn get_value<T>(&self, index: usize) -> Result<T,NjError>
+        where T: JSValue 
+    {
         use crate::sys::napi_throw_type_error;
-        use crate::sys::napi_get_value_double;
         use crate::sys::napi_typeof;
 
 
-        let mut valuetype: napi_valuetype = napi_valuetype_napi_number;
+        let mut valuetype: napi_valuetype = 0;
   
         napi_call!(
             napi_typeof(
@@ -360,18 +385,12 @@ impl JsCallback  {
                 &mut valuetype
             ));
 
-        if  valuetype != napi_valuetype_napi_number {
-            unsafe { napi_throw_type_error(self.env.inner(), ptr::null_mut(), c_str!("Wrong arguments").as_ptr()) };
-            return 0.0
+        if  valuetype != T::JS_TYPE {
+            unsafe { napi_throw_type_error(self.env.inner(), ptr::null_mut(), c_str!("invalid type").as_ptr()) };
+            return Err(NjError::InvalidType)
         }
 
-        let mut value: f64 = 0.0;
-
-        napi_call!(
-            napi_get_value_double(self.env.inner(), self.args[index], &mut value)
-        );
-
-        value
+        T::convert_to_rust(&self.env, self.args[index])
     }
 
 

@@ -1,5 +1,5 @@
 [package]
-name = "nj-example-hello-async-cb"
+name = "nj-example-async-cb"
 version = "0.0.1"
 authors = ["fluvio.io"]
 edition = "2018"

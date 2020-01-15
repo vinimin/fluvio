@@ -1,5 +1,5 @@
 [package]
-name = "nj-example-hello-cb"
+name = "nj-example-function"
 version = "0.0.1"
 authors = ["fluvio.io"]
 edition = "2018"

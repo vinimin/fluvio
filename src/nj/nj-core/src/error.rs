@@ -6,7 +6,7 @@ use std::io::Error as IoError;
 #[derive(Debug)]
 pub enum NjError {
     IoError(IoError),
-    NotDoubleType
+    InvalidType
 }
 
 impl From<IoError> for NjError {
@@ -20,7 +20,7 @@ impl fmt::Display for NjError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::IoError(err) => write!(f, "{}", err),
-            Self::NotDoubleType => write!(f,"invalid double data type"),
+            Self::InvalidType => write!(f,"invalid type"),
         }
     }
 }

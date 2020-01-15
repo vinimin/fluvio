@@ -14,7 +14,10 @@ pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi
     let js_env = JsEnv::new(env);    
     let cb = js_env.get_cb_info(info,2);
    
-    let first_arg = cb.get_value(0);
+    let first_arg = match cb.get_value::<f64>(0) {
+        Ok(val) => val,
+        Err(_err) =>  return ptr::null_mut()
+    };
     let msg = format!("argument is: {}",first_arg);
     let label = js_env.create_string_utf8(&msg);
     let global = js_env.get_global();
@@ -27,11 +30,11 @@ pub extern "C" fn hello_callback(env: napi_env,info: napi_callback_info) -> napi
 }
 
 #[no_mangle]
-pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value{
+pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
 
     define_property!("hello",env,exports,hello_callback);
 
-    exports;
+    exports
 }
 
 

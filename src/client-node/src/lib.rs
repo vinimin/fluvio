@@ -14,7 +14,7 @@ static mut CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
-    define_property!("sc",env,exports,hello_callback_async);
+    define_property!("connectSc",env,exports,hello_callback_async);
     
     exports
 }

@@ -1,5 +1,38 @@
-use nj_core::sys::napi_env;
-use nj_core::sys::napi_callback_info;
+use async_trait::async_trait;;
+
+use nj::sys::napi_env;
+use nj::sys::napi_callback_info;
+use nj::sys::napi_deferred;
+use nj::core::JSWorker;
+use nj::core::val::JsEnv;
+
+/// Worker to connect sc
+struct ConnectScWorker {
+    deferred: napi_deferred,
+    host_addr: String
+}
+
+unsafe impl Send for ConnectScWorker{}
+
+
+
+#[async_trait]
+impl JSWorker for ConnectScWorker {
+
+    fn deferred(&self) -> napi_deferred {
+        self.deferred
+    }
+
+    fn create_worker(js_env: &JsEnv,info: napi_callback_info,deferred: napi_deferred) -> Self {
+
+        let js_cb = js_env.get_cb_info(info,1);    // a single argument
+        let my_data = js_cb.get_value(0);              // get a value
+        Self {
+            deferred,
+            my_data
+        }
+    }
+}
 
 
 #[no_mangle]

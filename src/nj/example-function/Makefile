@@ -1,5 +1,5 @@
 
-DYLIB = ../../../target/debug/libnj_example_hello.dylib
+DYLIB = ../../../target/debug/libnj_example_function.dylib
 
 all:	build
 

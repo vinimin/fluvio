@@ -13,6 +13,7 @@ use nj_core::val::JsExports;
 use nj_core::PropertyBuilder;
 use nj_core::val::JsCallback;
 use nj_core::JSClass;
+use nj_core::NjError;
 
 
 static mut MYOBJECT_CONSTRUCTOR: napi_ref = ptr::null_mut();
@@ -54,8 +55,6 @@ impl MyObject {
 
         my_obj.plus_one();
 
-        let new_val = my_obj.value();
-    
         js_env.create_double(my_obj.value())
     
     }
@@ -87,7 +86,10 @@ impl MyObject {
         let js_cb = js_env.get_cb_info(info,1);     // a single argument
         let my_obj = js_cb.unwrap::<MyObject>();
 
-        let arg_value = js_cb.get_value(0);
+        let arg_value = match js_cb.get_value::<f64>(0) {
+            Ok(val) => val,
+            Err(_err) => return ptr::null_mut()
+        };
         let my_val = my_obj.value();
 
         // multiply two values
@@ -104,14 +106,13 @@ impl JSClass for MyObject {
 
     const CLASS_NAME: &'static str = "MyObject";
 
-    fn crate_from_js(js_cb: &JsCallback) -> Box<Self> {
+    fn crate_from_js(js_cb: &JsCallback) -> Result<Self,NjError> {
 
-        let value = js_cb.get_value(0);
+        let value = js_cb.get_value::<f64>(0)?;
 
         println!("value passed: {}",value);
 
-        Box::new(MyObject::new(value))
-
+        Ok(MyObject::new(value))
     }
 
     fn set_wrapper(&mut self,wrapper: napi_ref) {

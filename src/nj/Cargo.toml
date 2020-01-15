@@ -11,8 +11,8 @@ example = []
 [dependencies]
 nj-sys = { path = "nj-sys" }
 nj-core = { path = "nj-core" }
-nj-example-hello = { path = "example-hello", optional = true }
-nj-example-hello-cb = { path = "example-hello-cb", optional = true }
-nj-example-hello-async-cb = { path = "example-hello-async-cb", optional = true }
+nj-example-function = { path = "example-function", optional = true }
+nj-example-cb = { path = "example-cb", optional = true }
+nj-example-async-cb = { path = "example-async-cb", optional = true }
 nj-example-wrapper = { path = "example-wrapper", optional = true }
-nj-example-hello-promise = { path = "example-hello-promise", optional = true }
+nj-example-promise = { path = "example-promise", optional = true }
