@@ -5,14 +5,14 @@ use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
 use nj_core::sys::napi_ref;
-use nj_core::sys::napi_property_descriptor;
 use nj_core::register_module;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
-use nj_core::PropertyBuilder;
+use nj_core::Property;
 use nj_core::val::JsCallback;
 use nj_core::JSClass;
 use nj_core::NjError;
+use nj_core::PropertiesBuilder;
 
 
 static mut MYOBJECT_CONSTRUCTOR: napi_ref = ptr::null_mut();
@@ -125,18 +125,13 @@ impl JSClass for MyObject {
         }
     }
 
-    fn properties() -> Vec<napi_property_descriptor> {
+    fn properties() -> PropertiesBuilder {
+
         vec![
-            PropertyBuilder::new("plusOne")
-                .method(Self::js_plus_one)
-                .build(),
-            PropertyBuilder::new("multiply")
-                .method(Self::js_multiply)
-                .build(),
-            PropertyBuilder::new("value")
-                .getter(Self::js_get_value)
-                .build()
-        ]
+            Property::new("plusOne").method(Self::js_plus_one),
+            Property::new("multiply").method(Self::js_multiply),
+            Property::new("value").getter(Self::js_get_value)
+        ].into()
     }
 
 

@@ -74,3 +74,9 @@ impl PropertiesBuilder {
         
     }
 }
+
+impl From<Vec<Property>> for PropertiesBuilder {
+    fn from(properties: Vec<Property>) -> Self {
+        Self(properties)
+    }
+}

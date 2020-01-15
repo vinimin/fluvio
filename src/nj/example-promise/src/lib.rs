@@ -10,9 +10,9 @@ use nj_core::sys::napi_callback_info;
 use nj_core::val::JsEnv;
 use nj_core::JSWorker;
 use nj_core::val::JsExports;
-use nj_core::PropertyBuilder;
+use nj_core::Property;
 use nj_core::NjError;
-
+use nj_core::register_module;
 
 struct Worker {
     my_data: f64
@@ -56,14 +56,12 @@ pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_valu
     
 
     let js_exports = JsExports::new(env,exports);
-    let prop = js_exports.prop_builder()
-        .add(
-            PropertyBuilder::new("hello")
-                .method(Worker::start_promise)
-                .build()
-        ).build();
     
-    js_exports.define_property(prop);
+    js_exports.define_property(
+        js_exports.prop_builder()
+            .add(
+                Property::new("hello")
+                .method(Worker::start_promise)));
     
     exports
 

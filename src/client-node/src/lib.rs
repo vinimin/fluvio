@@ -4,8 +4,9 @@ mod sc;
 
 use std::ptr;
 
-use nj_core::sys::napi_value;
-use nj_core::sys::napi_env;
+use nj::sys::napi_value;
+use nj::sys::napi_env;
+use nj::core::register_module;
 use sc::ConnectScWorker;
 
 #[no_mangle]

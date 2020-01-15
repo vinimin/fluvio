@@ -12,7 +12,7 @@ use crate::sys::napi_valuetype;
 use crate::sys::napi_ref;
 use crate::sys::napi_deferred;
 use crate::sys::napi_threadsafe_function_call_js;
-use crate::sys::napi_property_descriptor;
+
 
 use crate::c_str;
 use crate::PropertiesBuilder;
@@ -143,11 +143,12 @@ impl JsEnv {
     }
 
     /// define classes
-    pub fn define_class(&self, name: &str,constructor: napi_callback_raw,mut properties: Vec<napi_property_descriptor>)  -> napi_value {
+    pub fn define_class(&self, name: &str,constructor: napi_callback_raw, properties: PropertiesBuilder)  -> napi_value {
         
         let mut js_constructor = ptr::null_mut();
+        let mut raw_properties = properties.as_raw_properties();
 
-        println!("defining class: {} with {} properties",name,properties.len());
+        println!("defining class: {} with {} properties",name,raw_properties.len());
         napi_call!(
             crate::sys::napi_define_class(
                 self.0, 
@@ -155,8 +156,8 @@ impl JsEnv {
                 name.len(),
                 Some(constructor), 
                 ptr::null_mut(), 
-                properties.len(), 
-                properties.as_mut_ptr(),
+                raw_properties.len(), 
+                raw_properties.as_mut_ptr(),
                 &mut js_constructor
             )
         ); 
@@ -481,7 +482,10 @@ impl JsExports {
 
     pub fn define_property(&self, properties: PropertiesBuilder ) {
        
+        // it is important not to release properties until this call is executed
+        // since it is source of name string
         let mut raw_properties = properties.as_raw_properties();
+
         napi_call!(
             crate::sys::napi_define_properties(
                 self.env.inner(), 

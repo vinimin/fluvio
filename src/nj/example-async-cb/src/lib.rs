@@ -7,7 +7,7 @@ use nj_core::sys::napi_value;
 use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
 use nj_core::val::JsExports;
-use nj_core::PropertyBuilder;
+use nj_core::Property;
 use nj_core::register_module;
 use nj_core::val::JsEnv;
 
@@ -68,14 +68,12 @@ pub extern "C" fn hello_callback_async(env: napi_env,info: napi_callback_info) -
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
     
     let js_exports = JsExports::new(env,exports);
-    let prop = js_exports.prop_builder()
-        .add(
-            PropertyBuilder::new("hello")
-                .method(hello_callback_async)
-                .build()
-        ).build();
     
-    js_exports.define_property(prop);
+    js_exports.define_property(
+        js_exports.prop_builder()
+        .add(
+            Property::new("hello")
+            .method(hello_callback_async)));
     
     exports
 }

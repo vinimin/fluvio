@@ -9,8 +9,8 @@ use crate::sys::napi_ref;
 use crate::val::JsEnv;
 use crate::val::JsExports;
 use crate::val::JsCallback;
-use crate::sys::napi_property_descriptor;
 use crate::NjError;
+use crate::PropertiesBuilder;
 
 pub trait JSClass: Sized {
 
@@ -25,7 +25,7 @@ pub trait JSClass: Sized {
     fn set_constructor(constructor: napi_ref);
 
 
-    fn properties() -> Vec<napi_property_descriptor>;
+    fn properties() -> PropertiesBuilder;
 
 
     /// initialize class

@@ -7,7 +7,7 @@ use nj_core::sys::napi_callback_info;
 use nj_core::register_module;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
-use nj_core::PropertyBuilder;
+use nj_core::Property;
 
 
 #[no_mangle]
@@ -39,10 +39,9 @@ pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_valu
     js_exports.define_property(
         js_exports.prop_builder()
             .add(
-                PropertyBuilder::new("hello")
+                Property::new("hello")
                     .method(hello_callback)
-                .build()
-            ).build());
+            ));
     
     exports
 }
