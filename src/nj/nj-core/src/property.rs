@@ -1,42 +1,52 @@
 use std::ptr;
+use std::ffi::CString;
 
 use crate::sys::napi_property_descriptor;
 use crate::sys::napi_property_attributes_napi_default;
 use crate::sys::napi_callback_raw;
+use crate::sys::napi_callback;
 
-pub struct PropertyBuilder(napi_property_descriptor);
+pub struct Property {
+    name: CString,
+    method: napi_callback,
+    getter: napi_callback,
+    setter: napi_callback
+}
 
-impl PropertyBuilder {
+impl Property {
 
     pub fn new(name: &str) -> Self {
-
-        let descriptor = napi_property_descriptor {
-            utf8name: name.as_ptr() as *const i8,
-            name: ptr::null_mut(),
+        Self {
+            name: CString::new(name).expect("c-string should not fail"),
             method: None,
             getter: None,
-            setter: None,
-            value: ptr::null_mut(),
-            attributes: napi_property_attributes_napi_default,
-            data: ptr::null_mut()
-        };
-
-        Self(descriptor)
+            setter: None
+        }
     }
 
     pub fn method(mut self,method: napi_callback_raw) -> Self {
 
-        self.0.method = Some(method);
+        self.method = Some(method);
         self
     }
 
     pub fn getter(mut self,getter: napi_callback_raw) -> Self {
-        self.0.getter = Some(getter);
+        self.getter = Some(getter);
         self
     }
 
-    pub fn build (self) -> napi_property_descriptor {
-        self.0
+    pub fn as_raw_property(&self) -> napi_property_descriptor {
+
+        napi_property_descriptor {
+            utf8name: self.name.as_ptr(),
+            name: ptr::null_mut(),
+            method: self.method,
+            getter: self.getter,
+            setter: self.setter,
+            value: ptr::null_mut(),
+            attributes: napi_property_attributes_napi_default,
+            data: ptr::null_mut()
+        }
     }
 
 }
@@ -44,7 +54,7 @@ impl PropertyBuilder {
 
 
 
-pub struct PropertiesBuilder(Vec<napi_property_descriptor>);
+pub struct PropertiesBuilder(Vec<Property>);
 
 impl PropertiesBuilder {
 
@@ -52,12 +62,15 @@ impl PropertiesBuilder {
         Self(vec![])
     }
 
-    pub fn add(mut self, property: napi_property_descriptor) -> Self {
+    pub fn add(mut self, property: Property) -> Self {
        self.0.push(property);
        self
     }
 
-    pub fn build(self) -> Vec<napi_property_descriptor> {
-        self.0
+    // define into env
+    pub fn as_raw_properties(&self) ->  Vec<napi_property_descriptor> {
+
+        self.0.iter().map( |p| p.as_raw_property()).collect()
+        
     }
 }

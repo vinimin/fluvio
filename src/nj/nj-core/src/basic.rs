@@ -479,14 +479,15 @@ impl JsExports {
     }
 
 
-    pub fn define_property(&self, mut properties : Vec<crate::sys::napi_property_descriptor>) {
+    pub fn define_property(&self, properties: PropertiesBuilder ) {
        
+        let mut raw_properties = properties.as_raw_properties();
         napi_call!(
             crate::sys::napi_define_properties(
                 self.env.inner(), 
                 self.inner , 
-                properties.len(),
-                properties.as_mut_ptr()
+                raw_properties.len(),
+                raw_properties.as_mut_ptr()
             )
         );
         

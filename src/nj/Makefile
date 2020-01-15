@@ -1,5 +1,5 @@
 
-test: test-function test-async-cb test-cb
+test: test-function test-async-cb test-cb test-wrapper test-promise
 
 test-function:
 	cd example-function;make test

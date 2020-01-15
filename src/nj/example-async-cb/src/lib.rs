@@ -10,7 +10,7 @@ use nj_core::val::JsExports;
 use nj_core::PropertyBuilder;
 use nj_core::register_module;
 use nj_core::val::JsEnv;
-use nj_core::c_str;
+
 
 // convert the rust data into JS
 pub extern "C" fn hello_callback_js(
@@ -70,7 +70,7 @@ pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_valu
     let js_exports = JsExports::new(env,exports);
     let prop = js_exports.prop_builder()
         .add(
-            PropertyBuilder::new(c_str!("hello"))
+            PropertyBuilder::new("hello")
                 .method(hello_callback_async)
                 .build()
         ).build();

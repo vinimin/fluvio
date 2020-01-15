@@ -8,7 +8,7 @@ mod convert;
 
 pub use thread_fn::ThreadSafeFunction;
 pub use error::NjError;
-pub use property::PropertyBuilder;
+pub use property::Property;
 pub use property::PropertiesBuilder;
 pub use class::JSClass;
 pub use worker::JSWorker;

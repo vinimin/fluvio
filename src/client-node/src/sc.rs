@@ -1,4 +1,4 @@
-use async_trait::async_trait;;
+use async_trait::async_trait;
 
 use nj::sys::napi_env;
 use nj::sys::napi_callback_info;

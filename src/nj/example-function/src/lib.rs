@@ -7,7 +7,7 @@ use nj_core::register_module;
 use nj_core::c_str;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
-use nj_core::PropertyBuilder;
+use nj_core::Property;
 
 #[no_mangle]
 pub extern "C" fn hello_world (env: napi_env, cb_info: napi_callback_info) -> napi_value {
@@ -31,12 +31,9 @@ pub extern "C" fn hello_world (env: napi_env, cb_info: napi_callback_info) -> na
 pub extern "C" fn init_hello (env: napi_env, exports: napi_value ) -> napi_value{
 
     let js_exports = JsExports::new(env,exports);
-    let prop = js_exports.prop_builder()
-        .add(
-            PropertyBuilder::new(c_str!("hello"))
-                .method(hello_world)
-                .build()
-        ).build();
+    let prop = js_exports.prop_builder().add(
+            Property::new("hello")
+                .method(hello_world));
     
     js_exports.define_property(prop);
 

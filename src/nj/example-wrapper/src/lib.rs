@@ -6,7 +6,6 @@ use nj_core::sys::napi_env;
 use nj_core::sys::napi_callback_info;
 use nj_core::sys::napi_ref;
 use nj_core::sys::napi_property_descriptor;
-use nj_core::c_str;
 use nj_core::register_module;
 use nj_core::val::JsEnv;
 use nj_core::val::JsExports;
@@ -128,13 +127,13 @@ impl JSClass for MyObject {
 
     fn properties() -> Vec<napi_property_descriptor> {
         vec![
-            PropertyBuilder::new(c_str!("plusOne"))
+            PropertyBuilder::new("plusOne")
                 .method(Self::js_plus_one)
                 .build(),
-            PropertyBuilder::new(c_str!("multiply"))
+            PropertyBuilder::new("multiply")
                 .method(Self::js_multiply)
                 .build(),
-            PropertyBuilder::new(c_str!("value"))
+            PropertyBuilder::new("value")
                 .getter(Self::js_get_value)
                 .build()
         ]
