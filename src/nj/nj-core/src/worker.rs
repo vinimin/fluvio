@@ -34,26 +34,33 @@ pub trait JSWorker: Sized + Send + 'static {
     /// create new worker based on argument based in the callback
     fn create_worker(env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError>;
 
-    /// entry point for JS callback
+    /// call by Node to create promise
     #[no_mangle]
     extern "C"  fn start_promise(env: napi_env, info: napi_callback_info) -> napi_value {
 
         let js_env = JsEnv::new(env); 
-        let (promise,deferred) = js_env.create_promise();
-
-        let function_name = format!("async_worker_th_{}",std::any::type_name::<Self>());
-        let ts_fn = js_env.create_thread_safe_function(&function_name,None,Some(Self::complete));
-        let js_deferred = JsDeferred(deferred);
-
-        let mut worker =  match Self::create_worker(&js_env,info) {
+        let worker =  match Self::create_worker(&js_env,info) {
             Ok(worker) => worker,
             Err(err) =>  {
                 error!("error creating worker: {}",err);
                 return ptr::null_mut()
             }
         };
+
+        worker.create_promise(&js_env)
+    }
+
+    /// create promise and schedule work
+    /// when this is finished it will return result in the main thread
+    fn create_promise(mut self,js_env: &JsEnv) -> napi_value {
+
+        let (promise,deferred) = js_env.create_promise();
+        let function_name = format!("async_worker_th_{}",std::any::type_name::<Self>());
+        let ts_fn = js_env.create_thread_safe_function(&function_name,None,Some(Self::complete));
+        let js_deferred = JsDeferred(deferred);
+
         spawn(async move {
-            let result = worker.execute().await;
+            let result = self.execute().await;
             finish_worker(ts_fn,result,js_deferred);
         });
 
@@ -63,7 +70,7 @@ pub trait JSWorker: Sized + Send + 'static {
     /// execute this in async worker thread
     async fn execute(&mut self) -> Result<Self::Output,Self::Error>;
 
-    // complete the work
+    // call by Node to convert result into JS value
     extern "C" fn complete(
         env: napi_env,
         _js_cb: napi_value, 
