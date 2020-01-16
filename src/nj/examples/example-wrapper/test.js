@@ -8,4 +8,4 @@ console.log(obj);
 console.log(obj.plusOne()); // 11
 
 let obj2 = obj.multiply(-1);
-console.log("multiple ",obj2.value);
+console.log("multiple should be -11 ",obj2.value);    // output should be --11

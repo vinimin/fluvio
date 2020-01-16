@@ -1,74 +1,58 @@
-use async_trait::async_trait;
+// wrap ScClient
+use std::ptr;
 
-use nj::sys::napi_env;
-use nj::sys::napi_callback_info;
-use nj::sys::napi_deferred;
-use nj::sys::napi_value;
-use nj::core::JSWorker;
-use nj::core::val::JsEnv;
-use nj::core::ToJsValue;
-use nj::core::NjError;
-use flv_client::profile::ScConfig;
 use flv_client::ScClient;
-use flv_client::ClientError;
+use nj::core::JSClass;
+use nj::core::NjError;
+use nj::sys::napi_ref;
+use nj::core::val::JsCallback;
+use nj::core::PropertiesBuilder;
 
-/// Worker to connect sc
-pub struct ConnectScWorker {
-    host_addr: String
+static mut JSCLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
+
+
+struct JsScClient {
+    inner: Option<ScClient>,
+    wrapper: napi_ref
+}
+
+impl JsScClient {
+
+    pub fn new() -> Self {
+        Self {
+            inner: None,
+            wrapper: ptr::null_mut(),
+        }
+    }
 }
 
 
-#[async_trait]
-impl JSWorker for ConnectScWorker {
+impl JSClass for JsScClient {
 
-    type Output = JsScClient;
-    type Error = JsClientError;
+    const CLASS_NAME: &'static str = "ScClient";
 
-    fn create_worker(js_env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError> {
+    fn crate_from_js(_js_cb: &JsCallback) -> Result<Self, NjError> {
 
-        let js_cb = js_env.get_cb_info(info,1);    
-        let host_addr = js_cb.get_value::<String>(0)?;   // get host address
-        Self {
-            host_addr
+        println!("creating ScClient {}", value);
+
+        Ok(Self::new(value))
+    }
+
+
+    fn set_wrapper(&mut self, wrapper: napi_ref) {
+        self.wrapper = wrapper;
+    }
+
+    fn set_constructor(constructor: napi_ref) {
+        unsafe {
+            JSCLIENT_CONSTRUCTOR = constructor;
         }
     }
 
-
-    async fn execute(&mut self) -> Result<Self::Output,Self::Error>  {
-
-        let config = ScConfig::new(Some(self.host_addr.clone()),None);
-        config.connect.await
-            .map( |client| client.into())
-            .err( |err| err.into())
+    fn properties() -> PropertiesBuilder {
+        vec![
+        ]
+        .into()
     }
-}
 
-
-struct JsScClient(ScClient<String>);
-
-impl From<ScClient<String>> for JsScClient {
-    fn from(client: ScClient<String>) -> Self {
-        Self(client)
-    }
-}
-
-impl ToJsValue for JsScClient {
-
-    fn to_js(self, _js_env: &JsEnv) -> napi_value {
-        ptr::null_mut()
-    }
-}
-
-struct JsClientError(ClientError);
-
-impl From<ClientError> for JsClientError {
-    fn from(error: ClientError) -> Self {
-        Self(error)
-    }
-}
-
-impl ToJsValue for JsClientError {
-    fn to_js(self, _js_env: &JsEnv) -> napi_value {
-        ptr::null_mut()
-    }
 }

@@ -84,9 +84,7 @@ impl MyObject {
         // multiply two values
         let new_val = js_env.create_double(arg_value * my_val);
 
-        let constructor = unsafe { js_env.get_reference_value(MYOBJECT_CONSTRUCTOR) };
-
-        js_env.new_instance(constructor, vec![new_val])
+        Self::new_instance(js_env,vec![new_val])
     }
 }
 
@@ -109,6 +107,9 @@ impl JSClass for MyObject {
         unsafe {
             MYOBJECT_CONSTRUCTOR = constructor;
         }
+    }
+    fn get_constructor() -> napi_ref {
+        unsafe { MYOBJECT_CONSTRUCTOR }
     }
 
     fn properties() -> PropertiesBuilder {

@@ -24,8 +24,19 @@ pub trait JSClass: Sized {
 
     fn set_constructor(constructor: napi_ref);
 
+    fn get_constructor() -> napi_ref;
 
-    fn properties() -> PropertiesBuilder;
+    /// new instance
+    fn new_instance(js_env: JsEnv, js_args: Vec<napi_value>) -> napi_value {
+
+        let constructor = js_env.get_reference_value(Self::get_constructor());
+
+        js_env.new_instance(constructor, js_args)
+    }
+
+    fn properties() -> PropertiesBuilder {
+        vec![].into()
+    }
 
 
     /// initialize class
@@ -58,26 +69,33 @@ pub trait JSClass: Sized {
             let js_cb = js_env.get_cb_info(info,1);
 
             let my_obj =  match Self::crate_from_js(&js_cb) {
-                Ok(my_obj) => Box::new(my_obj),
+                Ok(my_obj) => my_obj,
                 Err(err) => {
                     error!("error creating js new: {}",err);
                     return ptr::null_mut()
                 }
             };
 
-            let raw_ptr = Box::into_raw(my_obj);
-
-            let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,Self::js_finalize);
-           
-            unsafe {
-                let rust_ref: &mut Self = &mut * raw_ptr;
-                rust_ref.set_wrapper(wrap);
-            }
-
-            
-            js_cb.this_owned()
+            my_obj.wrap(js_env,js_cb)
         }
     }
+
+    // wrap my self as JS object
+    fn wrap(self, js_env: JsEnv, js_cb: JsCallback) -> napi_value {
+
+        let boxed_self = Box::new(self);
+        let raw_ptr = Box::into_raw(boxed_self);
+
+        let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,Self::js_finalize);
+       
+        unsafe {
+            let rust_ref: &mut Self = &mut * raw_ptr;
+            rust_ref.set_wrapper(wrap);
+        }
+
+        js_cb.this_owned()
+    }
+
 
     extern "C" fn js_finalize(_env: napi_env,finalize_data: *mut ::std::os::raw::c_void,
         _finalize_hint: *mut ::std::os::raw::c_void
