@@ -15,6 +15,7 @@ use nj::core::JSClass;
 use connect::ConnectScWorker;
 
 use crate::sc::JsScClient;
+use crate::sc::ScClientWrapper;
 use crate::spu_leader::JsSpuLeader;
 
 #[no_mangle]

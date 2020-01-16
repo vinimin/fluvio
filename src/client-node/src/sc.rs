@@ -3,6 +3,7 @@
 
 use std::ptr;
 use std::mem::replace;
+use std::sync::Arc;
 
 use flv_client::ScClient;
 use nj::core::JSClass;
@@ -20,9 +21,35 @@ use nj::core::ToJsValue;
 static mut JS_CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 
 type DefaultScClient = ScClient<String>;
+type SharedScClient = Arc<DefaultScClient>;
+
+// simple wrapper to facilitate conversion to JS Class
+pub struct ScClientWrapper(DefaultScClient);
+
+impl From<DefaultScClient> for ScClientWrapper {
+    fn from(client: DefaultScClient) -> Self {
+        Self(client)
+    }
+}
+
+
+impl ToJsValue for ScClientWrapper {
+
+    fn to_js(self, js_env: &JsEnv) -> napi_value {
+
+        let new_instance = JsScClient::new_instance(js_env,vec![]);
+        JsScClient::unwrap(js_env,new_instance).set_client(self.0);
+        new_instance
+
+    }
+}
+
+
+
+
 
 pub struct JsScClient {
-    inner: Option<DefaultScClient>
+    inner: Option<SharedScClient>
 }
 
 
@@ -34,8 +61,8 @@ impl JsScClient {
         }
     }
 
-    pub fn set_client(&mut self,client: Option<DefaultScClient>) {
-        replace(&mut self.inner,client);
+    pub fn set_client(&mut self,client: DefaultScClient) {
+        self.inner.replace(Arc::new(client));
     }
 
     /// JS method to return host address
@@ -85,27 +112,6 @@ impl JsScClient {
 
 
 }
-
-
-impl From<DefaultScClient> for JsScClient {
-    fn from(client: DefaultScClient) -> Self {
-        Self {
-            inner: Some(client)
-        }
-    }
-}
-
-impl ToJsValue for JsScClient {
-
-    fn to_js(self, js_env: &JsEnv) -> napi_value {
-
-        let new_instance = Self::new_instance(js_env,vec![]);
-        Self::unwrap(js_env,new_instance).set_client(self.inner);
-        new_instance
-
-    }
-}
-
 
 
 

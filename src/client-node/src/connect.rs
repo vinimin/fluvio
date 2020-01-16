@@ -11,7 +11,7 @@ use nj::core::NjError;
 use flv_client::profile::ScConfig;
 use flv_client::ClientError;
 
-use crate::JsScClient;
+use crate::ScClientWrapper;
 
 /// Worker to connect sc
 pub struct ConnectScWorker {
@@ -22,7 +22,7 @@ pub struct ConnectScWorker {
 #[async_trait]
 impl JSWorker for ConnectScWorker {
 
-    type Output = JsScClient;
+    type Output = ScClientWrapper;
     type Error = JsClientError;
 
     fn create_worker(js_env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError> {
