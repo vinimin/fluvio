@@ -93,7 +93,6 @@ pub trait JSClass: Sized {
     
     /// call when Javascript class constructor is called
     /// For example:  new Car(...)
-    #[no_mangle]
     extern "C" fn js_new(env: napi_env , info: napi_callback_info ) -> napi_value {
 
         println!("Class constructor called");
