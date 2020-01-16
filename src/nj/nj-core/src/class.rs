@@ -64,6 +64,11 @@ pub trait JSClass: Sized {
         js_env.new_instance(constructor, js_args)
     }
 
+    /// given instance, return my object
+    fn unwrap(js_env: &JsEnv, instance: napi_value) -> &mut Self {
+        js_env.unwrap::<JSObjectWrapper<Self>>(instance).mut_inner()
+    }
+
     fn properties() -> PropertiesBuilder {
         vec![].into()
     }
