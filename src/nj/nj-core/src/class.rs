@@ -31,11 +31,12 @@ impl <T>JSObjectWrapper<T> where T: JSClass {
     fn wrap(self, js_env: JsEnv, js_cb: JsCallback) -> napi_value {
 
         let boxed_self = Box::new(self);
-        let raw_ptr = Box::into_raw(boxed_self);
+        let raw_ptr = Box::into_raw(boxed_self);    // rust no longer manages this struct
 
         let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,T::js_finalize);
     
         unsafe {
+            // save the wrap reference in wrapper container
             let rust_ref: &mut Self = &mut * raw_ptr;
             rust_ref.wrapper = wrap;
         }
@@ -60,7 +61,6 @@ pub trait JSClass: Sized {
     fn new_instance(js_env: &JsEnv, js_args: Vec<napi_value>) -> napi_value {
 
         let constructor = js_env.get_reference_value(Self::get_constructor());
-
         js_env.new_instance(constructor, js_args)
     }
 
@@ -69,13 +69,18 @@ pub trait JSClass: Sized {
     }
 
 
-    /// initialize class
+    /// define class and properties under exports
     fn js_init(js_exports: &mut JsExports) {
 
-        let properties = Self::properties();
-        let js_constructor = js_exports.env().define_class(Self::CLASS_NAME,Self::js_new,properties);
+        let js_constructor = js_exports.env().define_class(
+            Self::CLASS_NAME,
+            Self::js_new,
+            Self::properties());
+        
+        // save the constructor reference, we need this later in order to instantiate
         let js_ref = js_exports.env().create_reference(js_constructor, 1);
         Self::set_constructor(js_ref);
+
         js_exports.set_name_property(Self::CLASS_NAME,js_constructor);
     }
 
