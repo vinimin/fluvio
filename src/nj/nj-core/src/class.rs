@@ -12,22 +12,50 @@ use crate::val::JsCallback;
 use crate::NjError;
 use crate::PropertiesBuilder;
 
+pub struct JSObjectWrapper<T> {
+    wrapper: napi_ref,
+    inner: T,
+}
+
+impl <T>JSObjectWrapper<T> {
+    
+    pub fn mut_inner(&mut self) -> &mut T {
+        &mut self.inner
+    }
+}
+
+impl <T>JSObjectWrapper<T> where T: JSClass {
+ 
+    fn wrap(self, js_env: JsEnv, js_cb: JsCallback) -> napi_value {
+
+        let boxed_self = Box::new(self);
+        let raw_ptr = Box::into_raw(boxed_self);
+
+        let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,T::js_finalize);
+    
+        unsafe {
+            let rust_ref: &mut Self = &mut * raw_ptr;
+            rust_ref.wrapper = wrap;
+        }
+
+        js_cb.this_owned()
+    }
+}
+
+
 pub trait JSClass: Sized {
 
     const CLASS_NAME: &'static str;
 
-    // create my self from js callback
-    fn crate_from_js(js_cb: &JsCallback) -> Result<Self,NjError>;
-
-
-    fn set_wrapper(&mut self,wrapper: napi_ref);
+    // create rust object from argument
+    fn create_from_js(js_cb: &JsCallback) -> Result<Self,NjError>;
 
     fn set_constructor(constructor: napi_ref);
 
     fn get_constructor() -> napi_ref;
 
     /// new instance
-    fn new_instance(js_env: JsEnv, js_args: Vec<napi_value>) -> napi_value {
+    fn new_instance(js_env: &JsEnv, js_args: Vec<napi_value>) -> napi_value {
 
         let constructor = js_env.get_reference_value(Self::get_constructor());
 
@@ -51,11 +79,12 @@ pub trait JSClass: Sized {
 
     
     
-    /// Js constructor call
+    /// call when Javascript class constructor is called
+    /// For example:  new Car(...)
     #[no_mangle]
     extern "C" fn js_new(env: napi_env , info: napi_callback_info ) -> napi_value {
 
-        println!("MyObject constructor called");
+        println!("Class constructor called");
         let js_env = JsEnv::new(env);
         let target = js_env.get_new_target(info);
 
@@ -68,8 +97,11 @@ pub trait JSClass: Sized {
             // Invoked as constructor: `new MyObject(...)`
             let js_cb = js_env.get_cb_info(info,1);
 
-            let my_obj =  match Self::crate_from_js(&js_cb) {
-                Ok(my_obj) => my_obj,
+            let my_obj =  match Self::create_from_js(&js_cb) {
+                Ok(inner) => JSObjectWrapper {
+                    inner,
+                    wrapper: ptr::null_mut()
+                },
                 Err(err) => {
                     error!("error creating js new: {}",err);
                     return ptr::null_mut()
@@ -80,22 +112,15 @@ pub trait JSClass: Sized {
         }
     }
 
-    // wrap my self as JS object
-    fn wrap(self, js_env: JsEnv, js_cb: JsCallback) -> napi_value {
+    /*
+    /// convert my self as JS object
+    fn as_js_instance(self,js_env: &JsEnv,js_args: Vec<napi_value>) -> napi_value {
 
-        let boxed_self = Box::new(self);
-        let raw_ptr = Box::into_raw(boxed_self);
+        let new_instance = Self::new_instance(js_env,args);
 
-        let wrap =  js_env.wrap(js_cb.this(),raw_ptr as *mut u8,Self::js_finalize);
-       
-        unsafe {
-            let rust_ref: &mut Self = &mut * raw_ptr;
-            rust_ref.set_wrapper(wrap);
-        }
-
-        js_cb.this_owned()
+        // unwrap the actual inner
     }
-
+    */
 
     extern "C" fn js_finalize(_env: napi_env,finalize_data: *mut ::std::os::raw::c_void,
         _finalize_hint: *mut ::std::os::raw::c_void
@@ -103,7 +128,7 @@ pub trait JSClass: Sized {
 
         println!("my object finalize");
         unsafe {
-            let ptr: *mut Self = finalize_data as *mut Self;
+            let ptr: *mut JSObjectWrapper<Self> = finalize_data as *mut JSObjectWrapper<Self>;
             let _rust = Box::from_raw(ptr);
         }
         

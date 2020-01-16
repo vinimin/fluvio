@@ -8,11 +8,11 @@ use nj::sys::napi_ref;
 use nj::core::val::JsCallback;
 use nj::core::PropertiesBuilder;
 
-static mut JSCLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
+static mut JS_CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 
 
-struct JsScClient {
-    inner: Option<ScClient>,
+pub struct JsScClient {
+    inner: Option<ScClient<String>>,
     wrapper: napi_ref
 }
 
@@ -33,9 +33,9 @@ impl JSClass for JsScClient {
 
     fn crate_from_js(_js_cb: &JsCallback) -> Result<Self, NjError> {
 
-        println!("creating ScClient {}", value);
+        println!("creating ScClient");
 
-        Ok(Self::new(value))
+        Ok(Self::new())
     }
 
 
@@ -45,9 +45,14 @@ impl JSClass for JsScClient {
 
     fn set_constructor(constructor: napi_ref) {
         unsafe {
-            JSCLIENT_CONSTRUCTOR = constructor;
+            JS_CLIENT_CONSTRUCTOR = constructor;
         }
     }
+
+    fn get_constructor() -> napi_ref {
+        unsafe { JS_CLIENT_CONSTRUCTOR }
+    }
+
 
     fn properties() -> PropertiesBuilder {
         vec![

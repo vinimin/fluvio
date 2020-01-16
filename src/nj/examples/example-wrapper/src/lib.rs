@@ -17,14 +17,12 @@ static mut MYOBJECT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 
 struct MyObject {
     val: f64,
-    wrapper: napi_ref,
 }
 
 impl MyObject {
     pub fn new(val: f64) -> Self {
         Self {
-            val,
-            wrapper: ptr::null_mut(),
+            val
         }
     }
 
@@ -84,14 +82,14 @@ impl MyObject {
         // multiply two values
         let new_val = js_env.create_double(arg_value * my_val);
 
-        Self::new_instance(js_env,vec![new_val])
+        Self::new_instance(&js_env,vec![new_val])
     }
 }
 
 impl JSClass for MyObject {
     const CLASS_NAME: &'static str = "MyObject";
 
-    fn crate_from_js(js_cb: &JsCallback) -> Result<Self, NjError> {
+    fn create_from_js(js_cb: &JsCallback) -> Result<Self, NjError> {
         let value = js_cb.get_value::<f64>(0)?;
 
         println!("value passed: {}", value);
@@ -99,15 +97,13 @@ impl JSClass for MyObject {
         Ok(MyObject::new(value))
     }
 
-    fn set_wrapper(&mut self, wrapper: napi_ref) {
-        self.wrapper = wrapper;
-    }
 
     fn set_constructor(constructor: napi_ref) {
         unsafe {
             MYOBJECT_CONSTRUCTOR = constructor;
         }
     }
+
     fn get_constructor() -> napi_ref {
         unsafe { MYOBJECT_CONSTRUCTOR }
     }

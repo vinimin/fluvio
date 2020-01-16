@@ -18,7 +18,7 @@ use crate::c_str;
 use crate::PropertiesBuilder;
 use crate::napi_call;
 use crate::NjError;
-
+use crate::JSObjectWrapper;
 use crate as nj_core;
 
 pub struct JsEnv(napi_env);
@@ -446,14 +446,10 @@ impl JsCallback  {
 
 
     pub fn unwrap<T>(&self) -> &mut T  {
-
-        self.env.unwrap(self.this())
+        self.env.unwrap::<JSObjectWrapper<T>>(self.this()).mut_inner()
     }
 
     
-    
-    
-
 }
 
 

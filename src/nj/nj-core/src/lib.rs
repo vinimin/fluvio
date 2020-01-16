@@ -13,9 +13,9 @@ pub use property::PropertiesBuilder;
 pub use class::JSClass;
 pub use worker::JSWorker;
 pub use convert::ToJsValue;
-
 pub use ctor::ctor;
 
+use class::JSObjectWrapper;
 
 pub mod sys {
     pub use nj_sys::*;

@@ -10,6 +10,7 @@ use nj::core::register_module;
 use nj::core::val::JsExports;
 use nj::core::Property;
 use nj::core::JSWorker;
+use nj::core::JSClass;
 use connect::ConnectScWorker;
 use sc::JsScClient;
 
