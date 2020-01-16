@@ -1,17 +1,14 @@
-use std::ptr;
-
+// implement connect workflow
 use async_trait::async_trait;
 
 use nj::sys::napi_callback_info;
-use nj::sys::napi_value;
 use nj::core::JSWorker;
 use nj::core::val::JsEnv;
-use nj::core::ToJsValue;
 use nj::core::NjError;
 use flv_client::profile::ScConfig;
-use flv_client::ClientError;
 
 use crate::ScClientWrapper;
+use crate::JsClientError;
 
 /// Worker to connect sc
 pub struct ConnectScWorker {
@@ -44,17 +41,3 @@ impl JSWorker for ConnectScWorker {
     }
 }
 
-
-pub struct JsClientError(ClientError);
-
-impl From<ClientError> for JsClientError {
-    fn from(error: ClientError) -> Self {
-        Self(error)
-    }
-}
-
-impl ToJsValue for JsClientError {
-    fn to_js(self, _js_env: &JsEnv) -> napi_value {
-        ptr::null_mut()
-    }
-}

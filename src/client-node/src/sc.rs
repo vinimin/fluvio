@@ -2,10 +2,11 @@
 // JS Wrapper for ScClient
 
 use std::ptr;
-use std::mem::replace;
 use std::sync::Arc;
 
 use flv_client::ScClient;
+use flv_future_aio::sync::RwLock;
+use flv_future_core::run_block_on;
 use nj::core::JSClass;
 use nj::core::NjError;
 use nj::core::val::JsEnv;
@@ -21,7 +22,7 @@ use nj::core::ToJsValue;
 static mut JS_CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 
 type DefaultScClient = ScClient<String>;
-type SharedScClient = Arc<DefaultScClient>;
+type SharedScClient = Arc<RwLock<DefaultScClient>>;
 
 // simple wrapper to facilitate conversion to JS Class
 pub struct ScClientWrapper(DefaultScClient);
@@ -62,7 +63,20 @@ impl JsScClient {
     }
 
     pub fn set_client(&mut self,client: DefaultScClient) {
-        self.inner.replace(Arc::new(client));
+        self.inner.replace(Arc::new(RwLock::new(client)));
+    }
+
+    fn addr(&self) -> String {
+
+        // since clock is in the lock, we need to read in order to access it
+        self.inner.as_ref().map_or( "".to_owned(), move |c|  {
+            run_block_on( async move {
+                let c1 = c.clone();
+                let read_client = c1.read().await;
+                read_client.inner().addr().to_owned()
+            })
+        })
+
     }
 
     /// JS method to return host address
@@ -75,7 +89,7 @@ impl JsScClient {
 
         let js_client = js_cb.unwrap::<Self>();
 
-        let addr = js_client.inner.as_ref().map_or( "", |c| c.inner().addr());
+        let addr = js_client.addr();
 
         js_env.create_string_utf8(&addr)
     }
@@ -146,8 +160,43 @@ impl JSClass for JsScClient {
 
 }
 
+mod worker {
+    use async_trait::async_trait;
 
-pub struct FindLeaderWorker {
-    topic: String,
-    partition: i32
+    use flv_client::SpuController;
+    use nj::core::JSWorker;
+
+    use crate::SpuLeaderWrapper;
+    use crate::JsClientError;
+
+    use super::SharedScClient;
+
+    pub struct FindLeaderWorker {
+        topic: String,
+        partition: i32,
+        client: SharedScClient
+    }
+
+
+    #[async_trait]
+    impl JSWorker for FindLeaderWorker {
+
+        type Output = SpuLeaderWrapper;
+        type Error = JsClientError;
+
+        async fn execute(&mut self) -> Result<Self::Output,Self::Error>  {
+
+            let mut client_w = self.client.write().await;
+            client_w.find_leader_for_topic_partition(
+                &self.topic,
+                self.partition).await
+                .map( |client| client.into())
+                .map_err( |err| err.into())
+        }
+
+    }
+
+
 }
+
+

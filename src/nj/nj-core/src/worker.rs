@@ -32,7 +32,10 @@ pub trait JSWorker: Sized + Send + 'static {
     type Error: ToJsValue;
 
     /// create new worker based on argument based in the callback
-    fn create_worker(env: &JsEnv,info: napi_callback_info) -> Result<Self,NjError>;
+    /// only need if it is called as method
+    fn create_worker(_env: &JsEnv,_info: napi_callback_info) -> Result<Self,NjError> {
+        Err(NjError::InvalidType)
+    }
 
     /// call by Node to create promise
     #[no_mangle]
