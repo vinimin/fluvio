@@ -12,12 +12,13 @@ use nj::core::Property;
 use nj::core::JSWorker;
 use nj::core::JSClass;
 use connect::ConnectScWorker;
-use sc::JsScClient;
+
+use crate::sc::JsScClient;
 
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {
 
-    let js_exports = JsExports::new(env,exports);
+    let mut js_exports = JsExports::new(env,exports);
     let prop = js_exports.prop_builder().add(
             Property::new("connectSc")
                 .method(ConnectScWorker::start_promise));

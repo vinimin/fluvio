@@ -9,8 +9,9 @@ use nj::core::val::JsEnv;
 use nj::core::ToJsValue;
 use nj::core::NjError;
 use flv_client::profile::ScConfig;
-use flv_client::ScClient;
 use flv_client::ClientError;
+
+use crate::JsScClient;
 
 /// Worker to connect sc
 pub struct ConnectScWorker {
@@ -44,22 +45,6 @@ impl JSWorker for ConnectScWorker {
 }
 
 
-pub struct JsScClient(ScClient<String>);
-
-impl From<ScClient<String>> for JsScClient {
-    fn from(client: ScClient<String>) -> Self {
-        Self(client)
-    }
-}
-
-impl ToJsValue for JsScClient {
-
-    fn to_js(self, js_env: &JsEnv) -> napi_value {
-
-        ptr::null_mut()
-    }
-}
-
 pub struct JsClientError(ClientError);
 
 impl From<ClientError> for JsClientError {
@@ -69,8 +54,7 @@ impl From<ClientError> for JsClientError {
 }
 
 impl ToJsValue for JsClientError {
-    fn to_js(self, js_env: &JsEnv) -> napi_value {
-        
-        
+    fn to_js(self, _js_env: &JsEnv) -> napi_value {
+        ptr::null_mut()
     }
 }

@@ -26,6 +26,8 @@ impl <T>JSObjectWrapper<T> {
 
 impl <T>JSObjectWrapper<T> where T: JSClass {
  
+    /// wrap myself in the JS instance
+    /// and saved the reference
     fn wrap(self, js_env: JsEnv, js_cb: JsCallback) -> napi_value {
 
         let boxed_self = Box::new(self);
