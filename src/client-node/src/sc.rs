@@ -18,6 +18,7 @@ use nj::core::Property;
 use nj::core::val::JsCallback;
 use nj::core::PropertiesBuilder;
 use nj::core::ToJsValue;
+use nj::core::JSWorker;
 
 static mut JS_CLIENT_CONSTRUCTOR: napi_ref = ptr::null_mut();
 
@@ -110,7 +111,7 @@ impl JsScClient {
             }
         };
 
-        let partition = match js_cb.get_value::<i32>(0) {
+        let partition = match js_cb.get_value::<i32>(1) {
             Ok(val) => val,
             Err(err) => {
                 println!("missing partition: {}", err);
@@ -120,8 +121,19 @@ impl JsScClient {
 
         let js_client = js_cb.unwrap::<Self>();
 
-        // now create promise
-        ptr::null_mut()
+        if let Some(ref client) = js_client.inner {
+            let worker = worker::FindLeaderWorker {
+                topic,
+                partition,
+                client: client.clone()
+            };
+            worker.create_promise(&js_env)
+        } else {
+            println!("client was not initialized properly");
+            ptr::null_mut()
+        }
+
+        
     }
 
 
@@ -154,6 +166,7 @@ impl JSClass for JsScClient {
     fn properties() -> PropertiesBuilder {
         vec![
             Property::new("addr").method(Self::js_addr),
+            Property::new("findLeader").method(Self::js_find_leader_for_topic_partition)
         ]
         .into()
     }
@@ -172,9 +185,9 @@ mod worker {
     use super::SharedScClient;
 
     pub struct FindLeaderWorker {
-        topic: String,
-        partition: i32,
-        client: SharedScClient
+        pub topic: String,
+        pub partition: i32,
+        pub client: SharedScClient
     }
 
 
@@ -186,6 +199,7 @@ mod worker {
 
         async fn execute(&mut self) -> Result<Self::Output,Self::Error>  {
 
+            
             let mut client_w = self.client.write().await;
             client_w.find_leader_for_topic_partition(
                 &self.topic,
