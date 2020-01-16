@@ -1,8 +1,18 @@
+DYLIB = ../../target/debug/libflv_node_client.dylib
+
 all:	build
 
 setup:
-	mkdir -p lib
+	mkdir -p dylib
 
 build:	setup
 	cargo build --lib
-	cp ../../target/debug/libflv_node_client.dylib lib/index.node
+	cp $(DYLIB) dylib/index.node
+
+
+test:	build
+	node test.js
+
+
+clean:
+	rm -rf dylib
