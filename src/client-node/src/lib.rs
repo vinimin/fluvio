@@ -1,6 +1,7 @@
 
 mod connect;
 mod sc;
+mod spu_leader;
 
 use std::ptr;
 
@@ -14,6 +15,7 @@ use nj::core::JSClass;
 use connect::ConnectScWorker;
 
 use crate::sc::JsScClient;
+use crate::spu_leader::JsSpuLeader;
 
 #[no_mangle]
 pub extern "C" fn init_export (env: napi_env, exports: napi_value ) -> napi_value {

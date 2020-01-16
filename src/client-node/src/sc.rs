@@ -1,4 +1,6 @@
 // wrap ScClient
+// JS Wrapper for ScClient
+
 use std::ptr;
 use std::mem::replace;
 
@@ -22,7 +24,6 @@ type DefaultScClient = ScClient<String>;
 pub struct JsScClient {
     inner: Option<DefaultScClient>
 }
-
 
 
 impl JsScClient {
@@ -51,6 +52,38 @@ impl JsScClient {
 
         js_env.create_string_utf8(&addr)
     }
+
+
+    #[no_mangle]
+    pub extern "C" fn js_find_leader_for_topic_partition(env: napi_env, info: napi_callback_info) -> napi_value {
+      
+        let js_env = JsEnv::new(env);
+
+        let js_cb = js_env.get_cb_info(info, 2); // there is 2 argument
+
+        let topic = match js_cb.get_value::<String>(0) {
+            Ok(val) => val,
+            Err(err) => {
+                println!("missing topic: {}", err);
+                return ptr::null_mut();
+            }
+        };
+
+        let partition = match js_cb.get_value::<i32>(0) {
+            Ok(val) => val,
+            Err(err) => {
+                println!("missing partition: {}", err);
+                return ptr::null_mut();
+            }
+        };
+
+        let js_client = js_cb.unwrap::<Self>();
+
+        // now create promise
+        ptr::null_mut()
+    }
+
+
 }
 
 
@@ -105,4 +138,10 @@ impl JSClass for JsScClient {
         .into()
     }
 
+}
+
+
+pub struct FindLeaderWorker {
+    topic: String,
+    partition: i32
 }

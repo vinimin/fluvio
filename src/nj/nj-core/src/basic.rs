@@ -342,22 +342,35 @@ pub trait JSValue: Sized {
 
 impl JSValue for f64 {
 
-
     const JS_TYPE: u32 = crate::sys::napi_valuetype_napi_number;
 
     fn convert_to_rust(env: &JsEnv,js_value: napi_value) -> Result<Self,NjError> {
-
-        use crate::sys::napi_get_value_double;
-
         let mut value: f64 = 0.0;
 
         napi_call!(
-            napi_get_value_double(env.inner(),js_value, &mut value)
+            crate::sys::napi_get_value_double(env.inner(),js_value, &mut value)
         );
 
         Ok(value)
     }
 }
+
+impl JSValue for i32 {
+    
+    const JS_TYPE: u32 = crate::sys::napi_valuetype_napi_number;
+
+    fn convert_to_rust(env: &JsEnv,js_value: napi_value) -> Result<Self,NjError> {
+        let mut value: i32 = 0;
+
+        napi_call!(
+            crate::sys::napi_get_value_int32(env.inner(),js_value, &mut value)
+        );
+
+        Ok(value)
+    }
+}
+
+
 
 impl JSValue for String {
 
