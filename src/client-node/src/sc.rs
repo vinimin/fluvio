@@ -197,9 +197,8 @@ mod worker {
         type Output = SpuLeaderWrapper;
         type Error = JsClientError;
 
-        async fn execute(&mut self) -> Result<Self::Output,Self::Error>  {
+        async fn execute(mut self) -> Result<Self::Output,Self::Error>  {
 
-            
             let mut client_w = self.client.write().await;
             client_w.find_leader_for_topic_partition(
                 &self.topic,

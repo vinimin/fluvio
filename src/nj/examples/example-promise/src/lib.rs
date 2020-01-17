@@ -36,7 +36,7 @@ impl JSWorker for Worker {
     }
     
     /// my work
-    async fn execute(&mut self) -> Result<Self::Output,Self::Error> {
+    async fn execute(mut self) -> Result<Self::Output,Self::Error> {
 
         println!("sleeping");
         sleep(Duration::from_secs(1)).await;

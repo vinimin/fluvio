@@ -19,6 +19,13 @@ impl ToJsValue for f64 {
     }
 }
 
+impl ToJsValue for i64 {
+
+    fn to_js(self, js_env: &JsEnv) -> napi_value {
+        js_env.create_int64(self)
+    }
+}
+
 impl ToJsValue for NjError {
     
     fn to_js(self, _js_env: &JsEnv) -> napi_value {

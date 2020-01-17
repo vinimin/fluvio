@@ -63,6 +63,21 @@ impl JsEnv {
         result
     }
 
+    pub fn create_int64(&self,value: i64) -> napi_value {
+
+        let mut result: napi_value = ptr::null_mut();
+        napi_call!(
+            crate::sys::napi_create_int64(
+                self.0,
+                value,
+                &mut result
+            )
+        );
+        result
+    }
+
+
+
     pub fn get_global(&self) -> napi_value {
 
         use nj_sys::napi_get_global;

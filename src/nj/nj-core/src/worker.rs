@@ -55,7 +55,7 @@ pub trait JSWorker: Sized + Send + 'static {
 
     /// create promise and schedule work
     /// when this is finished it will return result in the main thread
-    fn create_promise(mut self,js_env: &JsEnv) -> napi_value {
+    fn create_promise(self,js_env: &JsEnv) -> napi_value {
 
         let (promise,deferred) = js_env.create_promise();
         let function_name = format!("async_worker_th_{}",std::any::type_name::<Self>());
@@ -71,7 +71,7 @@ pub trait JSWorker: Sized + Send + 'static {
     }
 
     /// execute this in async worker thread
-    async fn execute(&mut self) -> Result<Self::Output,Self::Error>;
+    async fn execute(mut self) -> Result<Self::Output,Self::Error>;
 
     // call by Node to convert result into JS value
     extern "C" fn complete(

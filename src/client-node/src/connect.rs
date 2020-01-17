@@ -32,9 +32,10 @@ impl JSWorker for ConnectScWorker {
     }
 
 
-    async fn execute(&mut self) -> Result<Self::Output,Self::Error>  {
+    async fn execute(mut self) -> Result<Self::Output,Self::Error>  {
 
-        let config = ScConfig::new(Some(self.host_addr.clone()),None)?;
+        let config = ScConfig::new(Some(self.host_addr),None)?;
+
         config.connect().await
             .map( |client| client.into())
             .map_err( |err| err.into())
